@@ -1,0 +1,43 @@
+site_name: Enact
+site_description: Build Spring Boot applications around use cases defined in YAML.
+site_url: https://gvart.github.io/enact/
+repo_url: https://github.com/gvart/enact
+repo_name: enact
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  features:
+    - content.code.copy
+    - navigation.sections
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - toc:
+      permalink: true
+
+exclude_docs: |
+  step-discovery-guide.md
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - Guide:
+      - Steps: steps.md
+      - Use cases: use-cases.md
+      - Retry and cache: step-settings.md
+      - HTTP trigger: http-trigger.md
+  - Roadmap: roadmap.md
