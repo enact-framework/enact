@@ -60,8 +60,10 @@ A runnable example lives in [`enact-demo`](enact-demo) (`./gradlew :enact-demo:b
 
 ## Releasing
 
-Publishing to Maven Central uses [gradle-maven-publish-plugin](https://vanniktech.github.io/gradle-maven-publish-plugin/central/).
-Provide these as environment variables, then run `./gradlew publishToMavenCentral`:
+Releases are published by `.github/workflows/release.yml` when a `v*` tag is pushed (e.g. `git tag v0.0.1-alpha && git push origin v0.0.1-alpha`); the tag is the version. It needs the repository secrets `MAVEN_CENTRAL_USERNAME`, `MAVEN_CENTRAL_PASSWORD`, `SIGNING_KEY` and `SIGNING_KEY_PASSWORD`.
+
+To publish manually with [gradle-maven-publish-plugin](https://vanniktech.github.io/gradle-maven-publish-plugin/central/),
+provide these as environment variables, then run `./gradlew publishToMavenCentral`:
 
 ```
 ORG_GRADLE_PROJECT_mavenCentralUsername
