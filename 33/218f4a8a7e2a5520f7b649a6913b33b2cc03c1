@@ -1,0 +1,49 @@
+enact-core/src/main/kotlin/io/enact/core/usecase/StepInvoker.kt
+  s_cb210d30c9bdf8::t_cbf6ac271a620a 1-11,14-38,42-48,50-69
+  s_cb210d30c9bdf8::t_d1a76aa8adce24 13,49
+  s_cb210d30c9bdf8::t_c12da45e3906d2 12
+  s_cb210d30c9bdf8::t_0c16df823be699 39-41
+enact-core/src/main/kotlin/io/enact/core/trigger/TriggerHandlerRegistry.kt
+  s_cb210d30c9bdf8::t_2054cccc613c92 1-12
+enact-core/src/main/kotlin/io/enact/core/usecase/RuntimeUseCaseContainer.kt
+  s_cb210d30c9bdf8::t_9f0586a97d5196 4-5,11-13,15-19,24-26,29-37,42-43,45
+enact-core/src/main/kotlin/io/enact/core/trigger/TriggerProperties.kt
+  s_cb210d30c9bdf8::t_88dbb6c1c6ddb4 1-7
+enact-core/src/main/kotlin/io/enact/core/step/MethodAdapter.kt
+  s_cb210d30c9bdf8::t_da43d7c05f98b2 16-23
+  s_cb210d30c9bdf8::t_1a11ef5f20b761 3,8,15,24-25
+enact-core/src/main/kotlin/io/enact/core/configuration/StepDiscoveryBeanPostProcessor.kt
+  s_cb210d30c9bdf8::t_da43d7c05f98b2 89,137
+  s_cb210d30c9bdf8::t_5b38c8998f7889 71-72
+  s_cb210d30c9bdf8::t_449d536fcce91d 138
+enact-core/src/main/kotlin/io/enact/core/trigger/TriggerHandler.kt
+  s_cb210d30c9bdf8::t_2054cccc613c92 1-17
+enact-core/src/main/kotlin/io/enact/core/usecase/UseCaseValidator.kt
+  s_cb210d30c9bdf8::t_88dbb6c1c6ddb4 22,37
+enact-core/src/main/kotlin/io/enact/core/step/StepSettings.kt
+  s_cb210d30c9bdf8::t_1a11ef5f20b761 3,8-16
+enact-core/src/main/kotlin/io/enact/core/trigger/TriggerDefinition.kt
+  s_cb210d30c9bdf8::t_88dbb6c1c6ddb4 1-19
+enact-core/src/main/kotlin/io/enact/core/step/Step.kt
+  s_cb210d30c9bdf8::t_1a11ef5f20b761 5-6
+enact-core/src/main/kotlin/io/enact/core/retry/RetryableSpec.kt
+  s_cb210d30c9bdf8::t_1a11ef5f20b761 7-9,11,13-14,26-27
+enact-core/src/main/kotlin/io/enact/core/cache/CacheSpec.kt
+  s_cb210d30c9bdf8::t_1a11ef5f20b761 1-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "33218f4a8a7e2a5520f7b649a6913b33b2cc03c1",
+  "prompts": {},
+  "sessions": {
+    "s_cb210d30c9bdf8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d060378f-8cd5-4e63-9618-aec5a18bb1ba",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Vladlen Gladis <vladlen.gladis@deliveryhero.com>"
+    }
+  }
+}
