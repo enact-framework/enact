@@ -1,14 +1,12 @@
 plugins {
     id("buildsrc.convention.kotlin-jvm")
+    id("buildsrc.convention.enact-publish")
 }
 
-group = "io.enact"
+description = "Core of Enact: steps, use cases, validation and execution."
 
 dependencies {
-    implementation(libs.springContext)
-    implementation(libs.springWeb)
-    implementation(libs.jacksonYaml)
-    implementation(libs.jacksonKotlin)
+    api(libs.springContext)
 
     testImplementation(libs.junitJupiter)
     testImplementation(libs.springTest)
