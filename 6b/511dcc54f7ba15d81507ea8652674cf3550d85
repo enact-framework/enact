@@ -1,0 +1,47 @@
+docs/roadmap.md
+  s_cb210d30c9bdf8::t_75e20ac538b972 1-28
+docs/step-settings.md
+  s_cb210d30c9bdf8::t_b6d809fbc301f1 58-67
+  s_cb210d30c9bdf8::t_ad7fc41f6c86cd 1-57
+docs/use-cases.md
+  s_cb210d30c9bdf8::t_ad7fc41f6c86cd 1-54
+docs/http-trigger.md
+  s_cb210d30c9bdf8::t_ad7fc41f6c86cd 1-52
+docs/getting-started.md
+  s_cb210d30c9bdf8::t_ad7fc41f6c86cd 1-8,10-12,14-69
+  s_cb210d30c9bdf8::t_e7d7ceddd7cab6 9,13,70
+mkdocs.yml
+  s_cb210d30c9bdf8::t_e7d7ceddd7cab6 3-4
+  s_cb210d30c9bdf8::t_75e20ac538b972 1-2,5-43
+.github/workflows/docs.yml
+  s_cb210d30c9bdf8::t_75e20ac538b972 1-25,27-40
+  s_cb210d30c9bdf8::t_3f89c37e6184bc 26
+docs/index.md
+  s_cb210d30c9bdf8::t_e7d7ceddd7cab6 38-40
+  s_cb210d30c9bdf8::t_ad7fc41f6c86cd 1-37,41-48
+docs/steps.md
+  s_cb210d30c9bdf8::t_ad7fc41f6c86cd 1-58
+README.md
+  s_cb210d30c9bdf8::t_e7d7ceddd7cab6 41,49
+  s_cb210d30c9bdf8::t_3c73ddd3af9152 1-40,42-48,50-75
+CLAUDE.md
+  s_cb210d30c9bdf8::t_55455f12c2cbb9 7-61,67-77
+  s_cb210d30c9bdf8::t_cb82e7eb7fecda 62
+  s_cb210d30c9bdf8::t_09f3ba045c6347 1-6,63-66
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "6b511dcc54f7ba15d81507ea8652674cf3550d85",
+  "prompts": {},
+  "sessions": {
+    "s_cb210d30c9bdf8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d060378f-8cd5-4e63-9618-aec5a18bb1ba",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Vladlen Gladis <vladlen.gladis@deliveryhero.com>"
+    }
+  }
+}
