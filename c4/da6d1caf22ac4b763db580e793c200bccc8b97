@@ -1,0 +1,21 @@
+README.md
+  s_cb210d30c9bdf8::t_40a62dee927936 49
+mkdocs.yml
+  s_cb210d30c9bdf8::t_c3a9b1c971a847 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "c4da6d1caf22ac4b763db580e793c200bccc8b97",
+  "prompts": {},
+  "sessions": {
+    "s_cb210d30c9bdf8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d060378f-8cd5-4e63-9618-aec5a18bb1ba",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Vladlen Gladis <17303517+gvart@users.noreply.github.com>"
+    }
+  }
+}
