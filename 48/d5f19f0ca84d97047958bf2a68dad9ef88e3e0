@@ -1,0 +1,47 @@
+enact-demo/src/main/kotlin/io/enact/demo/order/exceptionhandler/OrderExceptionHandler.kt
+  s_cb210d30c9bdf8::t_2054cccc613c92 11
+  s_cb210d30c9bdf8::t_86e5f16be32b59 1-10,12
+enact-demo/src/main/resources/application.yaml
+  s_cb210d30c9bdf8::t_86e5f16be32b59 1-56
+enact-demo/src/main/kotlin/io/enact/demo/order/transfer/OrderRequest.kt
+  s_cb210d30c9bdf8::t_2054cccc613c92 1-6
+enact-demo/src/main/kotlin/io/enact/demo/order/OrderPersistingService.kt
+  s_cb210d30c9bdf8::t_7c44f3532f31da 1-6,8-12,16-31,33-36,39-40
+  s_cb210d30c9bdf8::t_2054cccc613c92 32
+  s_cb210d30c9bdf8::t_cb82e7eb7fecda 7,13-15,37-38
+enact-demo/requests.http
+  s_cb210d30c9bdf8::t_86e5f16be32b59 1-26
+enact-demo/src/main/kotlin/io/enact/demo/order/entrypoint/OrderController.kt
+  s_cb210d30c9bdf8::t_2054cccc613c92 1-18
+enact-demo/src/main/kotlin/io/enact/demo/order/transfer/OrderResponse.kt
+  s_cb210d30c9bdf8::t_2054cccc613c92 1-7
+enact-demo/src/main/kotlin/io/enact/demo/order/transfer/OrderIdRequest.kt
+  s_cb210d30c9bdf8::t_7c44f3532f31da 1-7
+enact-demo/src/main/kotlin/io/enact/demo/order/RandomGeneration.kt
+  s_cb210d30c9bdf8::t_2054cccc613c92 1-15
+enact-demo/src/main/kotlin/io/enact/demo/EnactDemoApplication.kt
+  s_cb210d30c9bdf8::t_86e5f16be32b59 1-13
+enact-demo/src/main/kotlin/io/enact/demo/order/OrderValidationService.kt
+  s_cb210d30c9bdf8::t_2054cccc613c92 21
+  s_cb210d30c9bdf8::t_7c44f3532f31da 1-20
+enact-demo/src/main/kotlin/io/enact/demo/order/OrderResponseMapperService.kt
+  s_cb210d30c9bdf8::t_2054cccc613c92 1-12
+enact-demo/src/main/kotlin/io/enact/demo/order/model/OrderEntity.kt
+  s_cb210d30c9bdf8::t_2054cccc613c92 1-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "48d5f19f0ca84d97047958bf2a68dad9ef88e3e0",
+  "prompts": {},
+  "sessions": {
+    "s_cb210d30c9bdf8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d060378f-8cd5-4e63-9618-aec5a18bb1ba",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Vladlen Gladis <vladlen.gladis@deliveryhero.com>"
+    }
+  }
+}
