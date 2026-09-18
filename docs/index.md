@@ -33,11 +33,11 @@ At startup Enact:
 
 ## Modules
 
-| Artifact | Purpose |
-|---|---|
-| `io.github.gvart:enact-core` | Step and use case model, validation, execution |
-| `io.github.gvart:enact-starter` | Spring Boot auto-configuration, YAML loading, use case injection |
-| `io.github.gvart:enact-starter-web` | HTTP (REST) trigger for Spring MVC applications |
+| Artifact                                      | Purpose                                                          |
+|-----------------------------------------------|------------------------------------------------------------------|
+| `io.github.enact-framework:enact-core`        | Step and use case model, validation, execution                   |
+| `io.github.enact-framework:enact-starter`     | Spring Boot auto-configuration, YAML loading, use case injection |
+| `io.github.enact-framework:enact-starter-web` | HTTP (REST) trigger for Spring MVC applications                  |
 
 ## Requirements
 

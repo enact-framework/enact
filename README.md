@@ -38,7 +38,7 @@ enact:
 
 ```kotlin
 dependencies {
-    implementation("io.github.gvart:enact-starter-web:0.0.1-alpha") // or enact-starter without HTTP
+    implementation("io.github.enact-framework:enact-starter-web:0.0.1-alpha") // or enact-starter without HTTP
 }
 ```
 
@@ -46,7 +46,7 @@ Requires Java 25 and Spring Boot 4.0.
 
 ## Documentation
 
-Read the full guide at **https://gvart.dev/enact/**. Its sources are in [`docs/`](docs).
+Read the full guide at **https://enact-framework.github.io/enact/**. Its sources are in [`docs/`](docs).
 
 A runnable example lives in [`enact-demo`](enact-demo) (`./gradlew :enact-demo:bootRun`, then use [`requests.http`](enact-demo/requests.http)).
 

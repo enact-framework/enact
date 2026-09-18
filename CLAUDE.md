@@ -59,7 +59,7 @@ enact:
 - Spring Boot 4.0 / Spring Framework 7 (core retry: `org.springframework.core.retry`)
 - Jackson 3 (`tools.jackson`)
 - Gradle (Kotlin DSL), multi-module; conventions in `buildSrc` (`kotlin-jvm`, `enact-publish`)
-- Package namespace: `io.enact`; Maven group `io.github.gvart` (repo github.com/gvart/enact)
+- Package namespace: `io.enact`; Maven group `io.github.enact-framework` (repo github.com/enact-framework/enact)
 
 ## Build
 

@@ -6,11 +6,11 @@ For a Spring MVC application that exposes use cases over HTTP:
 
 ```kotlin
 dependencies {
-    implementation("io.github.gvart:enact-starter-web:0.0.1-alpha")
+    implementation("io.github.enact-framework:enact-starter-web:0.0.1-alpha")
 }
 ```
 
-If you only need injectable use cases (no HTTP endpoints), use `io.github.gvart:enact-starter` instead.
+If you only need injectable use cases (no HTTP endpoints), use `io.github.enact-framework:enact-starter` instead.
 
 ## 2. Write steps
 
@@ -67,4 +67,4 @@ curl -X POST localhost:8080/api/v1/orders \
   -d '{"amount": 1.23, "productCount": 2}'
 ```
 
-The [`enact-demo`](https://github.com/gvart/enact/tree/main/enact-demo) module is a complete, runnable example.
+The [`enact-demo`](https://github.com/enact-framework/enact/tree/main/enact-demo) module is a complete, runnable example.
