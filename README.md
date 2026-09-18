@@ -46,7 +46,7 @@ Requires Java 25 and Spring Boot 4.0.
 
 ## Documentation
 
-Read the full guide at **https://gvart.github.io/enact/**. Its sources are in [`docs/`](docs).
+Read the full guide at **https://gvart.dev/enact/**. Its sources are in [`docs/`](docs).
 
 A runnable example lives in [`enact-demo`](enact-demo) (`./gradlew :enact-demo:bootRun`, then use [`requests.http`](enact-demo/requests.http)).
 

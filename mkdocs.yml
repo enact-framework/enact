@@ -1,6 +1,6 @@
 site_name: Enact
 site_description: Build Spring Boot applications around use cases defined in YAML.
-site_url: https://gvart.github.io/enact/
+site_url: https://gvart.dev/enact/
 repo_url: https://github.com/gvart/enact
 repo_name: enact
 edit_uri: edit/main/docs/
