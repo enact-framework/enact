@@ -1,0 +1,37 @@
+enact-starter/src/main/kotlin/io/enact/autoconfigure/configuration/UseCaseAutowireCandidateResolver.kt
+  s_cb210d30c9bdf8::t_2054cccc613c92 1-37
+enact-starter/src/main/kotlin/io/enact/autoconfigure/properties/EnactProperties.kt
+  s_cb210d30c9bdf8::t_58b4456b8b78a3 1-33
+  s_cb210d30c9bdf8::t_2054cccc613c92 34
+enact-starter/src/main/kotlin/io/enact/autoconfigure/configuration/DefinitionLoaderConfiguration.kt
+  s_cb210d30c9bdf8::t_70e4c4b495a1c8 4-115
+  s_cb210d30c9bdf8::t_e5344ae5aa044d 1-3
+  s_cb210d30c9bdf8::t_30547a997453bd 116
+enact-starter/src/main/kotlin/io/enact/autoconfigure/EnactAutoConfiguration.kt
+  s_cb210d30c9bdf8::t_2054cccc613c92 1-30
+enact-starter/src/main/kotlin/io/enact/autoconfigure/TriggerActivator.kt
+  s_cb210d30c9bdf8::t_58b4456b8b78a3 1-41
+  s_cb210d30c9bdf8::t_2054cccc613c92 42
+enact-starter/src/test/kotlin/io/enact/autoconfigure/EnactAutoConfigurationTest.kt
+  s_cb210d30c9bdf8::t_f43827f97ec653 10-12,87-136,186-195,198-209
+  s_cb210d30c9bdf8::t_4fd9644e6c16d3 137-169
+  s_cb210d30c9bdf8::t_476cebc373ad15 1-9,13-86,170-185,196-197,210-211
+enact-starter/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
+  s_cb210d30c9bdf8::t_58b4456b8b78a3 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "0a4fb7503caf16ce281972cfbe1129279a85204a",
+  "prompts": {},
+  "sessions": {
+    "s_cb210d30c9bdf8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d060378f-8cd5-4e63-9618-aec5a18bb1ba",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Vladlen Gladis <vladlen.gladis@deliveryhero.com>"
+    }
+  }
+}
