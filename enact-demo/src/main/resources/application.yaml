@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: enact-demo
+  cache:
+    cache-names: orders
+
+enact:
+  use-cases:
+    - name: generateId
+      description: Generates a random identifier
+      trigger:
+        rest:
+          method: GET
+          path: /api/v1/generate-id
+      steps:
+        - step: generateRandomUUID
+
+    - name: createOrder
+      description: Validates and stores a new order
+      trigger:
+        rest:
+          method: POST
+          path: /api/v1/orders
+          status: 201
+      steps:
+        - step: validateOrderCreation
+        - step: saveOrder
+          settings:
+            retry:
+              max-retries: 3
+              delay: 100ms
+        - step: mapOrderResponse
+
+    - name: findOrder
+      description: Looks up an order by id (cached)
+      trigger:
+        rest:
+          method: GET
+          path: /api/v1/orders/{id}
+      steps:
+        - step: findOrder
+          settings:
+            cache:
+              name: orders
+              key: "#input.id"
+        - step: mapOrderResponse
+
+    - name: cancelOrder
+      description: Cancels an existing order
+      trigger:
+        rest:
+          method: DELETE
+          path: /api/v1/orders/{id}
+          status: 204
+      steps:
+        - step: cancelOrder

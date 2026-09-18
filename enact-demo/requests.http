@@ -1,0 +1,26 @@
+### Create an order (REST trigger)
+POST localhost:8080/api/v1/orders
+Content-Type: application/json
+
+{
+    "amount": 1.23,
+    "productCount": 2
+}
+
+### Create an order (use case injected into a regular controller)
+POST localhost:8080/orders
+Content-Type: application/json
+
+{
+    "amount": 1.23,
+    "productCount": 2
+}
+
+### Find an order (replace the id)
+GET localhost:8080/api/v1/orders/00000000-0000-0000-0000-000000000000
+
+### Cancel an order (replace the id)
+DELETE localhost:8080/api/v1/orders/00000000-0000-0000-0000-000000000000
+
+### Generate an id
+GET localhost:8080/api/v1/generate-id
