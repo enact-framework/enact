@@ -12,6 +12,17 @@ dependencies {
 
 If you only need injectable use cases (no HTTP endpoints), use `io.github.enact-framework:enact-starter` instead.
 
+!!! tip "Snapshots"
+    Every change merged to `main` is published as a snapshot (for example `0.0.2-SNAPSHOT`).
+    To try unreleased changes, add the snapshot repository:
+
+    ```kotlin
+    repositories {
+        mavenCentral()
+        maven("https://central.sonatype.com/repository/maven-snapshots/")
+    }
+    ```
+
 ## 2. Write steps
 
 A step is a method annotated with `@Step` that takes zero or one argument:
