@@ -6,6 +6,8 @@ sealed interface UseCase<Input, Output> {
     val name: String
     val description: String
     val steps: List<Step<*, *>>
+    val inputType: Class<*>
+    val outputType: Class<*>
 
     fun execute(input: Input): Output
 

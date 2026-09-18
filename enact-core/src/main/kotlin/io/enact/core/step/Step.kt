@@ -2,7 +2,8 @@ package io.enact.core.step
 
 interface Step<Input, Output> {
     val name: String
-    var settings: StepSettings?
+    val settings: StepSettings?
+        get() = null
 
     fun execute(input: Input): Output
 

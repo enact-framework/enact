@@ -5,32 +5,6 @@ import io.enact.core.step.Step
 import org.springframework.core.GenericTypeResolver
 import kotlin.reflect.KClass
 
-fun <Input, Output> UseCase<Input, Output>.validateFirstStepInput() {
-    val (useCaseInput) = resolveTypes(this, UseCase::class)
-    val firstStep = steps.first()
-    val (firstStepInput) = resolveTypes(firstStep::class, Step::class)
-
-    require(useCaseInput == firstStepInput) {
-        """
-        Use-case "$name" input type mismatch for the first step "${firstStep.name}".
-        Expected: ${useCaseInput.name}, actual: ${firstStepInput.name}.
-        """.trimIndent()
-    }
-}
-
-fun <Input, Output> UseCase<Input, Output>.validateLastStepOutput() {
-    val (_, useCaseOutput) = resolveTypes(this, UseCase::class)
-    val lastStep = steps.last()
-    val (_, lastStepOutput) = resolveTypes(lastStep, Step::class)
-
-    require(useCaseOutput == lastStepOutput) {
-        """
-        Use-case "$name" output type mismatch for the last step "${lastStep.name}".
-        Expected: ${useCaseOutput.name}, actual: ${lastStepOutput.name}.
-        """.trimIndent()
-    }
-}
-
 fun <Input, Output> UseCase<Input, Output>.validateStepChain() {
     steps.zipWithNext { current, next ->
         val (_, currentOutput) = resolveTypes(current, Step::class)
@@ -45,7 +19,7 @@ fun <Input, Output> UseCase<Input, Output>.validateStepChain() {
     }
 }
 
-private fun resolveTypes(
+internal fun resolveTypes(
     instance: Any,
     genericType: KClass<*>,
 ): InOutTypes {
@@ -60,7 +34,7 @@ private fun resolveTypes(
     return InOutTypes(typeArgs[0], typeArgs[1])
 }
 
-private data class InOutTypes(
+internal data class InOutTypes(
     val inputType: Class<*>,
     val outputType: Class<*>,
 )

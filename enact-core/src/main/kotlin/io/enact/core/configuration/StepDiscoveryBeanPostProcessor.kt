@@ -68,8 +68,8 @@ class StepDiscoveryBeanPostProcessor(
         val retrySpec =
             retriable?.run {
                 RetryableSpec(
-                    includes.toList(),
-                    excludes.toList(),
+                    includes.map { it.java },
+                    excludes.map { it.java },
                     parseLong(maxRetries, maxRetriesString),
                     parseDuration(timeout, timeoutString, timeUnit),
                     parseDuration(delay, delayString, timeUnit),
@@ -86,7 +86,7 @@ class StepDiscoveryBeanPostProcessor(
                 bean,
                 method,
                 extractInputType(method),
-                method.returnType,
+                extractOutputType(method),
             )
 
         registrar.register(stepAdapter)
@@ -133,6 +133,8 @@ class StepDiscoveryBeanPostProcessor(
             1 -> method.parameters[0].type
             else -> throw IllegalArgumentException("Method ${method.name} must have 0 to 1 parameter")
         }
+
+    private fun extractOutputType(method: Method) = if (method.returnType == Void.TYPE) Unit::class.java else method.returnType
 
     private fun parseLong(
         value: Long,

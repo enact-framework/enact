@@ -2,19 +2,16 @@ package io.enact.core.retry
 
 import org.springframework.core.retry.RetryPolicy
 import java.time.Duration
-import java.util.concurrent.TimeUnit
-import kotlin.reflect.KClass
 
 data class RetryableSpec(
-    val includes: List<KClass<out Throwable>> = emptyList(),
-    val excludes: List<KClass<out Throwable>> = emptyList(),
-    val maxRetries: Long = 3,
+    val includes: List<Class<out Throwable>> = emptyList(),
+    val excludes: List<Class<out Throwable>> = emptyList(),
+    val maxRetries: Long = RetryPolicy.Builder.DEFAULT_MAX_RETRIES,
     val timeout: Duration = Duration.ZERO,
-    val delay: Duration = Duration.ofMillis(1000),
+    val delay: Duration = Duration.ofMillis(RetryPolicy.Builder.DEFAULT_DELAY),
     val jitter: Duration = Duration.ZERO,
-    val multiplier: Double = 1.0,
-    val maxDelay: Duration = Duration.ZERO,
-    val timeUnit: TimeUnit = TimeUnit.MILLISECONDS,
+    val multiplier: Double = RetryPolicy.Builder.DEFAULT_MULTIPLIER,
+    val maxDelay: Duration = Duration.ofMillis(RetryPolicy.Builder.DEFAULT_MAX_DELAY),
 ) {
     fun toRetryPolicy(): RetryPolicy =
         RetryPolicy
@@ -26,7 +23,7 @@ data class RetryableSpec(
             .maxDelay(maxDelay)
             .timeout(timeout)
             .apply {
-                if (includes.isNotEmpty()) includes(*includes.map { it.java }.toTypedArray())
-                if (excludes.isNotEmpty()) excludes(*excludes.map { it.java }.toTypedArray())
+                if (includes.isNotEmpty()) includes(*includes.toTypedArray())
+                if (excludes.isNotEmpty()) excludes(*excludes.toTypedArray())
             }.build()
 }
