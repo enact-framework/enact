@@ -1,0 +1,22 @@
+README.md
+  s_cb210d30c9bdf8::t_1bae196e55f254 63-65
+  s_cb210d30c9bdf8::t_aa5b7099b2a47a 66
+.github/workflows/release.yml
+  s_cb210d30c9bdf8::t_27ad0f08b9b6d3 1-38
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "b07c9d07db49c3c80ca321f46e18d72dcdf92368",
+  "prompts": {},
+  "sessions": {
+    "s_cb210d30c9bdf8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d060378f-8cd5-4e63-9618-aec5a18bb1ba",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Vladlen Gladis <17303517+gvart@users.noreply.github.com>"
+    }
+  }
+}
