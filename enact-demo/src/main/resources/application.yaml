@@ -38,11 +38,7 @@ enact:
           method: GET
           path: /api/v1/orders/{id}
       steps:
-        - step: findOrder
-          settings:
-            cache:
-              name: orders
-              key: "#input.id"
+        - step: findOrder       # cached via @Step(cache = Cached(...))
         - step: mapOrderResponse
 
     - name: cancelOrder

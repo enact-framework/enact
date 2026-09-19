@@ -1,5 +1,6 @@
 package io.enact.demo.order
 
+import io.enact.core.annotation.Cached
 import io.enact.core.annotation.Step
 import io.enact.demo.order.model.OrderEntity
 import io.enact.demo.order.transfer.OrderIdRequest
@@ -28,7 +29,7 @@ class OrderPersistingService(
         return orderEntity
     }
 
-    @Step
+    @Step(cache = Cached(name = "orders", key = "#input.id"))
     fun findOrder(request: OrderIdRequest): OrderEntity = requireNotNull(orders[request.id]) { "Order ${request.id} not found." }
 
     @Step

@@ -86,6 +86,9 @@ Cache can also be declared on the step itself. YAML settings take precedence:
     public OrderEntity findOrder(OrderIdRequest request) { /* ... */ }
     ```
 
+!!! warning
+    Don't combine this with Spring's `@Cacheable` on the same method. Both would cache the result, each with its own key.
+
 The application needs a `CacheManager` bean. With Spring Boot, add `spring-boot-starter-cache` and `@EnableCaching`.
 If a step uses a cache and no `CacheManager` exists, or the cache name is unknown, startup fails.
 
