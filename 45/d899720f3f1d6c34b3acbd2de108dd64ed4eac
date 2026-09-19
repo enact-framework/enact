@@ -1,0 +1,44 @@
+docs/steps.md
+  s_e3509a14681bb3::t_a695c1873eb91f 6-14
+  s_e3509a14681bb3::t_9357e1dcca1f9e 22,35,58,70,88,99
+enact-core/src/main/kotlin/io/enact/core/annotation/StepDefinition.kt
+  s_e3509a14681bb3::t_764941afedb101 1-18
+enact-core/src/test/kotlin/io/enact/core/configuration/stepdefinitions/ScannedStepDefinitions.kt
+  s_e3509a14681bb3::t_ab08165b6395d1 1-16
+CLAUDE.md
+  s_e3509a14681bb3::t_ab7e7852abafb2 18
+enact-demo/src/main/kotlin/io/enact/demo/order/OrderPersistingService.kt
+  s_e3509a14681bb3::t_2070ecce4739a3 14
+  s_e3509a14681bb3::t_f6fa03af8ea094 5
+enact-demo/src/main/kotlin/io/enact/demo/order/OrderResponseMapperService.kt
+  s_e3509a14681bb3::t_f6fa03af8ea094 4
+  s_e3509a14681bb3::t_2070ecce4739a3 8
+docs/getting-started.md
+  s_e3509a14681bb3::t_9357e1dcca1f9e 62,71,77,87,98,106
+README.md
+  s_e3509a14681bb3::t_9357e1dcca1f9e 9
+enact-demo/src/main/kotlin/io/enact/demo/order/OrderValidationService.kt
+  s_e3509a14681bb3::t_2070ecce4739a3 7
+  s_e3509a14681bb3::t_f6fa03af8ea094 4
+enact-demo/src/main/kotlin/io/enact/demo/order/RandomGeneration.kt
+  s_e3509a14681bb3::t_f6fa03af8ea094 4
+  s_e3509a14681bb3::t_2070ecce4739a3 8
+enact-core/src/test/kotlin/io/enact/core/configuration/StepDefinitionTest.kt
+  s_e3509a14681bb3::t_958230c28447d1 1-33
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "45d899720f3f1d6c34b3acbd2de108dd64ed4eac",
+  "prompts": {},
+  "sessions": {
+    "s_e3509a14681bb3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d7d34f01-a9fb-4cd2-8ab1-2a0045eeb6f2",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Vladlen Gladis <17303517+gvart@users.noreply.github.com>"
+    }
+  }
+}
