@@ -1,0 +1,30 @@
+.release-please-manifest.json
+  s_cb210d30c9bdf8::t_fb270998f2b517 1
+.github/workflows/release.yml
+  s_cb210d30c9bdf8::t_fb270998f2b517 5,9,12-21,23-24,26-29,32-33,47
+docs/getting-started.md
+  s_cb210d30c9bdf8::t_fb270998f2b517 7,13
+release-please-config.json
+  s_cb210d30c9bdf8::t_fb270998f2b517 1-13
+.github/workflows/snapshot.yml
+  s_cb210d30c9bdf8::t_fb270998f2b517 6
+README.md
+  s_cb210d30c9bdf8::t_fb270998f2b517 39,45
+  s_cb210d30c9bdf8::t_28f94d50b631c5 65,67-69,71-72,74-77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "5228f312308427f1c710e9c49e9f600e98c9c955",
+  "prompts": {},
+  "sessions": {
+    "s_cb210d30c9bdf8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d060378f-8cd5-4e63-9618-aec5a18bb1ba",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Vladlen Gladis <17303517+gvart@users.noreply.github.com>"
+    }
+  }
+}
