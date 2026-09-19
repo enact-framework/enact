@@ -16,7 +16,7 @@ Annotate a method of any Spring bean with `@Step`. The step name defaults to the
         fun saveOrder(request: OrderRequest): OrderEntity { /* ... */ }
 
         @Step("findOrderById")
-        fun findOrder(request: OrderIdRequest): OrderEntity { /* ... */ }
+        fun findOrder(id: UUID): OrderEntity { /* ... */ }
     }
     ```
 
@@ -29,7 +29,7 @@ Annotate a method of any Spring bean with `@Step`. The step name defaults to the
         public OrderEntity saveOrder(OrderRequest request) { /* ... */ }
 
         @Step(name = "findOrderById")
-        public OrderEntity findOrder(OrderIdRequest request) { /* ... */ }
+        public OrderEntity findOrder(UUID id) { /* ... */ }
     }
     ```
 

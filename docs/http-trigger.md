@@ -21,29 +21,158 @@ With `enact-starter-web` on the classpath, a use case can be exposed as a Spring
 
 ## Request binding
 
-The use case input is built from:
+The use case input (the first step's parameter) is built from the request. Simple endpoints need no binding
+configuration at all; `bind` covers everything else.
 
-1. the JSON request body (if any),
-2. query parameters, which override body fields,
-3. path variables, which override both.
+### Defaults
 
-The result is converted to the use case's input type with the application's Jackson `JsonMapper`. For example,
-`DELETE /api/v1/orders/42?reason=duplicate` into:
+| Source | Bound to |
+|---|---|
+| Path variable `{name}` | the input property `name` |
+| Query parameter `name` | the input property `name`, if the input has one; other parameters are ignored |
+| JSON body | the input itself |
+| Header | nothing; headers are only bound through `bind` |
+
+For example, `POST /api/v1/customers/c-1/orders?express=true` with body `{"amount": 10}` and no `bind`:
 
 === "Kotlin"
 
     ```kotlin
-    data class CancelOrder(val id: Long, val reason: String)
+    data class CreateOrder(
+        val customerId: String,       // path variable
+        val express: Boolean = false, // query parameter
+        val amount: Double,           // body
+    )
     ```
 
 === "Java"
 
     ```java
-    public record CancelOrder(long id, String reason) {}
+    public record CreateOrder(
+        String customerId,  // path variable
+        Boolean express,    // query parameter
+        double amount       // body
+    ) {}
     ```
 
+A search endpoint needs no body at all: `GET /api/v1/orders?minAmount=10&limit=5` binds to
+`data class OrderSearch(val minAmount: Double = 0.0, val limit: Int = 20)`.
+
+### Declaring bindings
+
+`bind` maps input properties to request sources:
+
+```yaml
+- name: updateOrder
+  trigger:
+    rest:
+      method: PUT
+      path: /api/v1/orders/{id} # (1)!
+      bind:
+        updatedBy: header:X-User-Id # (2)!
+        notify: query:send-notification # (3)!
+        changes: body # (4)!
+        firstItem: body:/items/0 # (5)!
+  steps:
+    - step: updateOrder
+```
+
+1.  `id` still binds to the property `id` by name.
+2.  A header. Header names are case-insensitive.
+3.  A query parameter under a different name.
+4.  The whole JSON body, bound to one property instead of the input itself.
+5.  Part of the body, selected with a [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901).
+
+=== "Kotlin"
+
+    ```kotlin
+    data class UpdateOrderCommand(
+        val id: UUID,
+        val updatedBy: String,
+        val notify: Boolean = false,
+        val changes: OrderRequest,
+        val firstItem: Item? = null,
+    )
+    ```
+
+=== "Java"
+
+    ```java
+    public record UpdateOrderCommand(
+        UUID id,
+        String updatedBy,
+        Boolean notify,
+        OrderRequest changes,
+        Item firstItem
+    ) {}
+    ```
+
+| Source | Meaning |
+|---|---|
+| `header:<name>` | request header |
+| `query:<name>` | query parameter |
+| `path:<name>` | path variable, e.g. `reference: path:id` to bind `{id}` to a property named differently |
+| `body` | the whole JSON body |
+| `body:<pointer>` | part of the JSON body, e.g. `body:/customer/address` |
+
+Once a property is declared in `bind`, the defaults no longer apply to it. Once any property binds from `body`,
+the body is no longer bound to the input itself.
+
+### Types, required values and lists
+
+The collected values are converted to the input type with the application's Jackson `JsonMapper`, so strings
+become numbers, booleans, `UUID`s, dates or enums, and custom deserializers apply.
+
+- **Required or optional** comes from the input type. A non-null Kotlin property without a default is required.
+  A nullable property or one with a default is optional. For Java records, use wrapper types (`Boolean`, `Long`)
+  for optional values: a missing primitive silently becomes `0`/`false`.
+- **Several values** (`?tag=a&tag=b`, repeated headers) bind to `List`, `Set` or array properties. A single-valued
+  property receiving several values is rejected.
+
+### Scalar input
+
+If the first step takes a single value such as `UUID`, `Long`, `String` or `Duration` (anything Jackson does not
+read as an object), it gets the path variable when the path has exactly one, and the body otherwise. In the first
+case the body is not read:
+
+=== "Kotlin"
+
+    ```kotlin
+    @Step
+    fun findOrder(id: UUID): OrderEntity { /* ... */ } // GET /api/v1/orders/{id}
+    ```
+
+=== "Java"
+
+    ```java
+    @Step
+    public OrderEntity findOrder(UUID id) { /* ... */ } // GET /api/v1/orders/{id}
+    ```
+
+To bind more than one value, use a data class or record.
+
+### Errors
+
+The request is answered with `400 Bad Request` when:
+
+- a value cannot be converted, or a required value is missing,
+- a property is bound from the path, a query parameter or `bind`, and the body also contains it. Values are
+  never silently overwritten: a client cannot replace the `{customerId}` of the URL through the body,
+- a single-valued property receives several values,
+- the body is not a JSON object while the input is bound from it.
+
+Enable `spring.mvc.problemdetails.enabled=true` to answer these with an RFC 9457 problem detail that explains the
+cause.
+
+Configuration mistakes fail at startup instead:
+
+- a `bind` key that is not a property of the input,
+- an unknown source, an invalid JSON Pointer, or `path:<name>` not present in the path,
+- a path variable that matches no input property,
+- the whole body bound to more than one property,
+- `bind` or several path variables for a scalar input, or `bind` for a use case without input.
+
 If the use case has no input (its first step takes no parameter), the request is not read.
-If the request cannot be converted to the input type, the response is `400 Bad Request`.
 
 ## Response
 

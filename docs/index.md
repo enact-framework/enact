@@ -63,7 +63,7 @@ wire them together in YAML, and let Enact check the chain at startup.
 
     ---
 
-    Expose a use case as a REST endpoint with a few lines of YAML: method, path, and status.
+    Expose a use case as a REST endpoint with a few lines of YAML. Path variables, query parameters, headers and the body bind to the input.
 
     [:octicons-arrow-right-24: HTTP trigger](http-trigger.md)
 
