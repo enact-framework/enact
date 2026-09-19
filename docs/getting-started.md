@@ -4,11 +4,13 @@
 
 For a Spring MVC application that exposes use cases over HTTP:
 
+<!-- x-release-please-start-version -->
 ```kotlin
 dependencies {
     implementation("io.github.enact-framework:enact-starter-web:0.0.1-alpha")
 }
 ```
+<!-- x-release-please-end -->
 
 If you only need injectable use cases (no HTTP endpoints), use `io.github.enact-framework:enact-starter` instead.
 

@@ -3,7 +3,7 @@ name: snapshot
 on:
   push:
     branches: [main]
-    paths-ignore: ["docs/**", "**.md", "mkdocs.yml", ".github/workflows/docs.yml", ".github/workflows/release.yml"]
+    paths-ignore: ["docs/**", "**.md", "mkdocs.yml", "version.txt", ".release-please-manifest.json", "release-please-config.json", ".github/workflows/docs.yml", ".github/workflows/release.yml"]
 
 concurrency:
   group: snapshot

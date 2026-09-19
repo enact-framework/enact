@@ -2,16 +2,35 @@ name: release
 
 on:
   push:
-    tags: ["v*"]
+    branches: [main]
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
-  publish:
+  # Keeps a release PR (changelog + version) up to date; merging it tags and creates the GitHub release
+  release-please:
     runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - id: release
+        uses: googleapis/release-please-action@v4
+
+  publish:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      TAG: ${{ needs.release-please.outputs.tag_name }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.TAG }}
 
       - uses: actions/setup-java@v4
         with:
@@ -25,14 +44,9 @@ jobs:
 
       # The tag (without the leading "v") is the published version
       - name: Publish to Maven Central
-        run: ./gradlew publishAndReleaseToMavenCentral -PVERSION_NAME=${GITHUB_REF_NAME#v} --no-configuration-cache
+        run: ./gradlew publishAndReleaseToMavenCentral -PVERSION_NAME=${TAG#v} --no-configuration-cache
         env:
           ORG_GRADLE_PROJECT_mavenCentralUsername: ${{ secrets.MAVEN_CENTRAL_USERNAME }}
           ORG_GRADLE_PROJECT_mavenCentralPassword: ${{ secrets.MAVEN_CENTRAL_PASSWORD }}
           ORG_GRADLE_PROJECT_signingInMemoryKey: ${{ secrets.SIGNING_KEY }}
           ORG_GRADLE_PROJECT_signingInMemoryKeyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
-
-      - name: Create GitHub release
-        run: gh release create "$GITHUB_REF_NAME" --generate-notes ${{ contains(github.ref_name, '-') && '--prerelease' || '' }}
-        env:
-          GH_TOKEN: ${{ github.token }}

@@ -36,11 +36,13 @@ enact:
 
 ## Installation
 
+<!-- x-release-please-start-version -->
 ```kotlin
 dependencies {
     implementation("io.github.enact-framework:enact-starter-web:0.0.1-alpha") // or enact-starter without HTTP
 }
 ```
+<!-- x-release-please-end -->
 
 Requires Java 25 and Spring Boot 4.0.
 
@@ -60,20 +62,19 @@ A runnable example lives in [`enact-demo`](enact-demo) (`./gradlew :enact-demo:b
 
 ## Releasing
 
-Releases are published by `.github/workflows/release.yml` when a `v*` tag is pushed (e.g. `git tag v0.0.1-alpha && git push origin v0.0.1-alpha`); the tag is the version. It needs the repository secrets `MAVEN_CENTRAL_USERNAME`, `MAVEN_CENTRAL_PASSWORD`, `SIGNING_KEY` and `SIGNING_KEY_PASSWORD`.
+Releases are automated with [release-please](https://github.com/googleapis/release-please) from the semantic commit messages:
 
-Every push to `main` publishes the current `VERSION_NAME` from `gradle.properties` (always a `-SNAPSHOT`) to
-`https://central.sonatype.com/repository/maven-snapshots/` via `.github/workflows/snapshot.yml`.
+1. Every push to `main` updates an open **release PR** with the next version and `CHANGELOG.md`.
+2. Merging the release PR tags the commit, creates the GitHub release and publishes the artifacts to Maven Central
+   (`.github/workflows/release.yml`).
 
-To publish manually with [gradle-maven-publish-plugin](https://vanniktech.github.io/gradle-maven-publish-plugin/central/),
-provide these as environment variables, then run `./gradlew publishToMavenCentral`:
+Every push to `main` also publishes the current `VERSION_NAME` from `gradle.properties` (always a `-SNAPSHOT`) to
+`https://central.sonatype.com/repository/maven-snapshots/` (`.github/workflows/snapshot.yml`). Bump it after a release.
 
-```
-ORG_GRADLE_PROJECT_mavenCentralUsername
-ORG_GRADLE_PROJECT_mavenCentralPassword
-ORG_GRADLE_PROJECT_signingInMemoryKey
-ORG_GRADLE_PROJECT_signingInMemoryKeyPassword
-```
+Both workflows need the repository secrets `MAVEN_CENTRAL_USERNAME`, `MAVEN_CENTRAL_PASSWORD`, `SIGNING_KEY` and
+`SIGNING_KEY_PASSWORD`. To publish manually, export them as `ORG_GRADLE_PROJECT_mavenCentralUsername`,
+`ORG_GRADLE_PROJECT_mavenCentralPassword`, `ORG_GRADLE_PROJECT_signingInMemoryKey` and
+`ORG_GRADLE_PROJECT_signingInMemoryKeyPassword`, then run `./gradlew publishToMavenCentral`.
 
 ## License
 
