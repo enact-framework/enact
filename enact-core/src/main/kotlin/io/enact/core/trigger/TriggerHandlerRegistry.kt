@@ -3,10 +3,16 @@ package io.enact.core.trigger
 class TriggerHandlerRegistry(
     handlers: List<TriggerHandler<*>>,
 ) {
-    private val handlersByType = handlers.associateBy { it.triggerType }
+    private val handlersByType = handlers.associateBy { it.triggerType.lowercase() }
+
+    init {
+        require(handlers.size == handlersByType.size) {
+            "Several trigger handlers declare the same type: ${handlers.map { it.triggerType }}"
+        }
+    }
 
     fun getHandler(type: String): TriggerHandler<*> =
-        handlersByType[type] ?: error("No trigger handler for '$type'. Available: ${handlersByType.keys}")
+        handlersByType[type.lowercase()] ?: error("No trigger handler for '$type'. Available: $types")
 
-    fun allHandlers(): Collection<TriggerHandler<*>> = handlersByType.values
+    val types: Set<String> get() = handlersByType.keys
 }

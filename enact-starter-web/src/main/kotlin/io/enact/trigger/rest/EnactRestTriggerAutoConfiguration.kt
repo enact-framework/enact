@@ -1,6 +1,5 @@
 package io.enact.trigger.rest
 
-import io.enact.autoconfigure.properties.EnactProperties
 import org.springframework.beans.factory.ListableBeanFactory
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBooleanProperty
@@ -17,9 +16,8 @@ class EnactRestTriggerAutoConfiguration {
     @Bean
     fun restTriggerHandler(
         jsonMapper: JsonMapper,
-        properties: EnactProperties,
         beanFactory: ListableBeanFactory,
-    ): RestTriggerHandler = RestTriggerHandler(jsonMapper, properties, beanFactory)
+    ): RestTriggerHandler = RestTriggerHandler(jsonMapper, beanFactory)
 
     /** Routes are only known after use cases are created, so delegate lazily to the handler. */
     @Bean

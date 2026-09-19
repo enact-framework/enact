@@ -8,7 +8,7 @@ Enact follows a use-case-oriented approach: developers define steps as Spring be
 
 ## Architecture
 
-- **`enact-core`** — `@Step` annotation, `Step`/`UseCase` model, step discovery (`StepDiscoveryBeanPostProcessor`), validation, execution with retry/cache (`RuntimeUseCaseContainer`, `StepInvoker`), trigger SPI
+- **`enact-core`** — `@Step` annotation, `Step`/`UseCase` model, step discovery (`StepDiscoveryBeanPostProcessor`), validation, execution with retry/cache (`RuntimeUseCaseContainer`, `StepInvoker`), trigger SPI (`TriggerHandler`, `TriggerRegistration`)
 - **`enact-starter`** — Spring Boot auto-configuration: binds `enact.*` properties, registers use case beans (`DefinitionLoaderConfiguration`), generic-aware injection (`UseCaseAutowireCandidateResolver`), trigger activation
 - **`enact-starter-web`** — REST trigger (`RestTriggerHandler`) built on Spring MVC functional routes
 - **`enact-demo`** — runnable sample app (not published)
@@ -25,17 +25,17 @@ Enact follows a use-case-oriented approach: developers define steps as Spring be
 ```yaml
 enact:
   enabled: true
-  groups:                        # optional; REST filters shared by use cases of a group
+  groups:                        # optional; filters shared by use cases of a group, resolved by the trigger
     default:                     # applies to use cases without `group`
-      filters: [bearerAuth]      # HandlerFilterFunction bean names, outermost first
+      filters: [bearerAuth]      # bean names, outermost first (HandlerFilterFunction for the REST trigger)
     admin:
       filters: [bearerAuth, requireAdmin]
   use-cases:
     - name: createOrder          # use case bean name
       description: ...
       group: admin               # optional; defaults to `default`
-      trigger:                   # optional; without it the use case is injection-only
-        rest:
+      trigger:                   # optional, exactly one type; without it the use case is injection-only
+        rest:                    # trigger type: the handler claiming it binds the block below
           method: POST
           path: /api/v1/orders/{customerId}   # {customerId} → input property customerId
           status: 201
@@ -63,7 +63,13 @@ enact:
 3. Step names must be unique
 4. A step with `cache` settings requires a `CacheManager` bean that knows the cache name
 5. REST `bind` keys must be input properties, `path:` sources must exist in the path, and every path variable must bind to a property
-6. A use case `group` must be declared in `enact.groups`, and every filter name must be a `HandlerFilterFunction` bean
+6. A use case `group` must be declared in `enact.groups`, and every filter name must be a bean of the kind the trigger expects (`HandlerFilterFunction` for REST)
+7. A use case declares at most one trigger, whose type must have a registered `TriggerHandler`
+
+## Triggers
+
+Trigger types are discovered from the configuration, so a starter adds one without changing core. `TriggerProperties`
+names only the types Enact ships (`rest`), so that editors complete and validate them. Nothing reads it at runtime.
 
 ## Tech Stack
 

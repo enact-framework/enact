@@ -17,7 +17,7 @@ data class EnactProperties(
     val groups: Map<String, GroupDefinition> = emptyMap(),
 ) {
     data class GroupDefinition(
-        /** Names of `HandlerFilterFunction` beans wrapping the REST routes of the group's use cases, outermost first. */
+        /** Names of the filter beans wrapping the group's use cases, outermost first; the trigger type defines their kind. */
         val filters: List<String> = emptyList(),
     )
 
@@ -28,7 +28,11 @@ data class EnactProperties(
         val description: String?,
         /** Group the use case belongs to; `default` when not set. */
         val group: String? = null,
-        /** Optional trigger exposing the use case (e.g. as an HTTP endpoint). Without it, the use case can only be injected. */
+        /**
+         * Optional trigger exposing the use case (e.g. as an HTTP endpoint), as a single entry keyed by trigger
+         * type, e.g. `rest`. Its value is bound by the `TriggerHandler` of that type, which may be one this class
+         * does not name. Without a trigger, the use case can only be injected.
+         */
         val trigger: TriggerProperties? = null,
         /** Ordered list of steps to execute. */
         val steps: List<StepReference>,

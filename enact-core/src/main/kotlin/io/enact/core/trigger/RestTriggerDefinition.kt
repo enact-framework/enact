@@ -1,11 +1,7 @@
 package io.enact.core.trigger
 
-interface TriggerDefinition {
-    val type: String
-}
-
 /**
- * REST HTTP endpoint trigger.
+ * REST HTTP endpoint trigger, bound from `trigger.rest` and handled by `enact-starter-web`.
  *
  * By default, path variables and matching query parameters are bound to input properties of the same name and the
  * JSON body to the input itself. [bind] declares anything else.
@@ -26,6 +22,4 @@ data class RestTriggerDefinition(
     val produces: String = "application/json",
     /** HTTP status code for successful responses. */
     val status: Int = 200,
-) : TriggerDefinition {
-    override val type: String = "rest"
-}
+)

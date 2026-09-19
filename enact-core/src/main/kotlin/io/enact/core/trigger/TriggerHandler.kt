@@ -1,17 +1,27 @@
 package io.enact.core.trigger
 
-import io.enact.core.usecase.UseCase
-
-interface TriggerHandler<T : TriggerDefinition> {
+/**
+ * Exposes use cases through a transport: HTTP, Kafka, SQS, ...
+ *
+ * One implementation per trigger type, published as a bean. At startup the framework binds the YAML under
+ * `trigger.<triggerType>` of every use case to [definitionType] and calls [register] for it, then [start] once
+ * all use cases are registered and [stop] when the application shuts down.
+ *
+ * @param D the trigger definition, a class Spring Boot can bind configuration properties to.
+ */
+interface TriggerHandler<D : Any> {
+    /** Key under `trigger:` selecting this handler, e.g. `rest`. Lowercase, unique across handlers. */
     val triggerType: String
 
-    fun extractDefinition(trigger: TriggerProperties): T?
+    /** Type the YAML under `trigger.<triggerType>` binds to; created with its defaults when the YAML is empty. */
+    val definitionType: Class<D>
 
-    fun register(
-        useCaseName: String,
-        definition: T,
-        useCase: UseCase<Any, Any>,
-    )
+    /** Registers a use case. Throw to fail the application startup on an invalid definition. */
+    fun register(registration: TriggerRegistration<D>)
 
-    fun activate() {}
+    /** Opens routes, consumers or connections. Called once, after every use case is registered. */
+    fun start() {}
+
+    /** Closes what [start] opened. Called when the application shuts down. */
+    fun stop() {}
 }

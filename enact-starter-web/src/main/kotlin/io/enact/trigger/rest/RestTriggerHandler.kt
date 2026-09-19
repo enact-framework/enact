@@ -1,9 +1,8 @@
 package io.enact.trigger.rest
 
-import io.enact.autoconfigure.properties.EnactProperties
 import io.enact.core.trigger.RestTriggerDefinition
 import io.enact.core.trigger.TriggerHandler
-import io.enact.core.trigger.TriggerProperties
+import io.enact.core.trigger.TriggerRegistration
 import io.enact.core.usecase.UseCase
 import org.springframework.beans.BeansException
 import org.springframework.beans.factory.ListableBeanFactory
@@ -22,10 +21,10 @@ import java.util.Optional
 
 class RestTriggerHandler(
     private val jsonMapper: JsonMapper,
-    private val properties: EnactProperties,
     private val beanFactory: ListableBeanFactory,
 ) : TriggerHandler<RestTriggerDefinition> {
     override val triggerType = "rest"
+    override val definitionType = RestTriggerDefinition::class.java
 
     private val registrations = mutableListOf<Registration>()
     private var routerFunction: RouterFunction<ServerResponse>? = null
@@ -38,30 +37,27 @@ class RestTriggerHandler(
         val filters: List<HandlerFilterFunction<ServerResponse, ServerResponse>>,
     )
 
-    override fun extractDefinition(trigger: TriggerProperties): RestTriggerDefinition? = trigger.rest
-
-    override fun register(
-        useCaseName: String,
-        definition: RestTriggerDefinition,
-        useCase: UseCase<Any, Any>,
-    ) {
+    override fun register(registration: TriggerRegistration<RestTriggerDefinition>) {
+        val useCaseName = registration.useCaseName
+        val definition = registration.definition
         require(definition.method.uppercase() in SUPPORTED_METHODS) {
             "Unsupported HTTP method '${definition.method}' for use case '$useCaseName'. Supported: $SUPPORTED_METHODS"
         }
         require(definition.path.isNotBlank()) { "Missing path for REST trigger of use case '$useCaseName'" }
 
+        val useCase = registration.useCase
         val inputBinder = RestInputBinder.of(useCaseName, definition.path, definition.bind, useCase.inputType, jsonMapper)
-        registrations.add(Registration(useCaseName, definition, useCase, inputBinder, filters(useCaseName, definition)))
+        val filters = filters(useCaseName, registration.groupFilters + definition.filters)
+        registrations.add(Registration(useCaseName, definition, useCase, inputBinder, filters))
     }
 
-    /** Filters of the use case's group (or `default`), then those of its trigger. */
+    /** Resolves filter bean names, those of the use case's group first, then those of its trigger. */
     @Suppress("UNCHECKED_CAST")
     private fun filters(
         useCaseName: String,
-        definition: RestTriggerDefinition,
-    ): List<HandlerFilterFunction<ServerResponse, ServerResponse>> {
-        val group = properties.useCases.firstOrNull { it.name == useCaseName }?.group ?: DEFAULT_GROUP
-        return (properties.groups[group]?.filters.orEmpty() + definition.filters).map { name ->
+        filterNames: List<String>,
+    ): List<HandlerFilterFunction<ServerResponse, ServerResponse>> =
+        filterNames.map { name ->
             try {
                 beanFactory.getBean(name, HandlerFilterFunction::class.java) as HandlerFilterFunction<ServerResponse, ServerResponse>
             } catch (e: BeansException) {
@@ -71,9 +67,8 @@ class RestTriggerHandler(
                 )
             }
         }
-    }
 
-    override fun activate() {
+    override fun start() {
         routerFunction =
             RouterFunctions
                 .route()
@@ -89,7 +84,7 @@ class RestTriggerHandler(
                 }.build()
     }
 
-    /** Routes of all registered use cases; empty until [activate] runs. */
+    /** Routes of all registered use cases; empty until [start] runs. */
     fun findHandler(request: ServerRequest): Optional<HandlerFunction<ServerResponse>> = routerFunction?.route(request) ?: Optional.empty()
 
     private fun handle(
@@ -107,7 +102,6 @@ class RestTriggerHandler(
     }
 
     private companion object {
-        const val DEFAULT_GROUP = "default"
         val SUPPORTED_METHODS = setOf("GET", "POST", "PUT", "PATCH", "DELETE")
         val NO_CONTENT_TYPES = setOf(Unit::class.java, Void.TYPE, Void::class.java)
     }

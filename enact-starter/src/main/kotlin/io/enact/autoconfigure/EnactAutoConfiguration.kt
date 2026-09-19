@@ -11,6 +11,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
+import org.springframework.core.env.Environment
 
 @AutoConfiguration
 @EnableEnact
@@ -26,5 +27,6 @@ class EnactAutoConfiguration {
         properties: EnactProperties,
         registry: TriggerHandlerRegistry,
         applicationContext: ApplicationContext,
-    ): TriggerActivator = TriggerActivator(properties, registry, applicationContext)
+        environment: Environment,
+    ): TriggerActivator = TriggerActivator(properties, registry, applicationContext, environment)
 }

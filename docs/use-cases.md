@@ -16,7 +16,7 @@ enact:
 ```
 
 1.  Bean name of the use case. Must be unique.
-2.  Optional, see [HTTP trigger](http-trigger.md).
+2.  Optional, at most one. See [HTTP trigger](http-trigger.md) or [Custom trigger](custom-trigger.md).
 3.  Optional, see [Retry and cache](step-settings.md).
 
 The input of the use case is the input of its first step, and its output is the output of its last step.
