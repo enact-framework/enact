@@ -36,7 +36,7 @@ enact:
       steps:
         - step: validateOrderCreation
         - step: saveOrder
-          settings:              # per use case; overrides settings declared on @Step
+          settings:              # per use case; overrides retry/cache declared on @Step
             retry:
               max-retries: 3
               delay: 100ms

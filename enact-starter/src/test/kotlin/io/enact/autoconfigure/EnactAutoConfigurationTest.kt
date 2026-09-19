@@ -1,5 +1,6 @@
 package io.enact.autoconfigure
 
+import io.enact.core.annotation.Cached
 import io.enact.core.annotation.Step
 import io.enact.core.usecase.UseCase
 import org.assertj.core.api.Assertions.assertThat
@@ -11,6 +12,7 @@ import org.springframework.cache.CacheManager
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager
 import org.springframework.resilience.annotation.Retryable
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.function.Function
 
 class EnactAutoConfigurationTest {
     private val runner =
@@ -135,6 +137,136 @@ class EnactAutoConfigurationTest {
     }
 
     @Test
+    fun `should use input as cache key when no key is set`() {
+        runner
+            .withBean(Counter::class.java)
+            .withBean(CacheManager::class.java, { ConcurrentMapCacheManager() })
+            .withPropertyValues(
+                "enact.use-cases[0].name=count",
+                "enact.use-cases[0].steps[0].step=count",
+                "enact.use-cases[0].steps[0].settings.cache.name=counts",
+            ).run { context ->
+                val useCase = context.getBean("count") as UseCase<Query, Int>
+
+                assertThat(useCase.execute(Query("a", "first"))).isEqualTo(1)
+                assertThat(useCase.execute(Query("a", "first"))).isEqualTo(1)
+                assertThat(useCase.execute(Query("a", "second"))).isEqualTo(2)
+            }
+    }
+
+    @Test
+    fun `should not cache failed step`() {
+        runner
+            .withBean(Flaky::class.java)
+            .withBean(CacheManager::class.java, { ConcurrentMapCacheManager() })
+            .withPropertyValues(
+                "enact.use-cases[0].name=flaky",
+                "enact.use-cases[0].steps[0].step=flaky",
+                "enact.use-cases[0].steps[0].settings.cache.name=results",
+            ).run { context ->
+                val useCase = context.getBean("flaky") as UseCase<String, String>
+
+                assertThatThrownBy { useCase.execute("x") }.hasMessage("attempt 1")
+                assertThatThrownBy { useCase.execute("x") }.hasMessage("attempt 2")
+                assertThat(useCase.execute("x")).isEqualTo("x")
+                assertThat(useCase.execute("x")).isEqualTo("x")
+                assertThat(context.getBean(Flaky::class.java).calls.get()).isEqualTo(3)
+            }
+    }
+
+    @Test
+    fun `should serve cached result without retrying`() {
+        runner
+            .withBean(Flaky::class.java)
+            .withBean(CacheManager::class.java, { ConcurrentMapCacheManager() })
+            .withPropertyValues(
+                "enact.use-cases[0].name=flaky",
+                "enact.use-cases[0].steps[0].step=flaky",
+                "enact.use-cases[0].steps[0].settings.retry.max-retries=2",
+                "enact.use-cases[0].steps[0].settings.retry.delay=1ms",
+                "enact.use-cases[0].steps[0].settings.cache.name=results",
+            ).run { context ->
+                val useCase = context.getBean("flaky") as UseCase<String, String>
+
+                assertThat(useCase.execute("x")).isEqualTo("x")
+                assertThat(useCase.execute("x")).isEqualTo("x")
+                assertThat(context.getBean(Flaky::class.java).calls.get()).isEqualTo(3)
+            }
+    }
+
+    @Test
+    fun `should use cache declared on step annotation`() {
+        runner
+            .withBean(AnnotatedCounter::class.java)
+            .withBean(CacheManager::class.java, { ConcurrentMapCacheManager() })
+            .withPropertyValues(
+                "enact.use-cases[0].name=count",
+                "enact.use-cases[0].steps[0].step=annotatedCount",
+            ).run { context ->
+                val useCase = context.getBean("count") as UseCase<Query, Int>
+
+                assertThat(useCase.execute(Query("a", "first"))).isEqualTo(1)
+                assertThat(useCase.execute(Query("a", "second"))).isEqualTo(1)
+                assertThat(useCase.execute(Query("b", "first"))).isEqualTo(2)
+            }
+    }
+
+    @Test
+    fun `should use cache declared on step class annotation`() {
+        runner
+            .withBean("classCounter", ClassCounter::class.java)
+            .withBean(CacheManager::class.java, { ConcurrentMapCacheManager() })
+            .withPropertyValues(
+                "enact.use-cases[0].name=count",
+                "enact.use-cases[0].steps[0].step=classCounter",
+            ).run { context ->
+                val useCase = context.getBean("count") as UseCase<Query, Int>
+
+                assertThat(useCase.execute(Query("a", "first"))).isEqualTo(1)
+                assertThat(useCase.execute(Query("a", "second"))).isEqualTo(1)
+                assertThat(useCase.execute(Query("b", "first"))).isEqualTo(2)
+            }
+    }
+
+    @Test
+    fun `should override annotation cache with yaml cache`() {
+        runner
+            .withBean(AnnotatedCounter::class.java)
+            .withBean(CacheManager::class.java, { ConcurrentMapCacheManager() })
+            .withPropertyValues(
+                "enact.use-cases[0].name=count",
+                "enact.use-cases[0].steps[0].step=annotatedCount",
+                "enact.use-cases[0].steps[0].settings.cache.name=byNote",
+                "enact.use-cases[0].steps[0].settings.cache.key=#input.note",
+            ).run { context ->
+                val useCase = context.getBean("count") as UseCase<Query, Int>
+
+                assertThat(useCase.execute(Query("a", "first"))).isEqualTo(1)
+                assertThat(useCase.execute(Query("b", "first"))).isEqualTo(1)
+                assertThat(useCase.execute(Query("a", "second"))).isEqualTo(2)
+                assertThat(context.getBean(CacheManager::class.java).cacheNames).containsExactly("byNote")
+            }
+    }
+
+    @Test
+    fun `should fail startup when cache name is unknown to cache manager`() {
+        runner
+            .withBean(Counter::class.java)
+            .withBean(CacheManager::class.java, { ConcurrentMapCacheManager("other") })
+            .withPropertyValues(
+                "enact.use-cases[0].name=count",
+                "enact.use-cases[0].steps[0].step=count",
+                "enact.use-cases[0].steps[0].settings.cache.name=counts",
+            ).run { context ->
+                assertThat(context)
+                    .hasFailed()
+                    .getFailure()
+                    .rootCause()
+                    .hasMessageContaining("which is not known to the CacheManager")
+            }
+    }
+
+    @Test
     fun `should inject use case by parameter name when types are ambiguous`() {
         runner
             .withBean(Greeter::class.java)
@@ -207,5 +339,19 @@ class EnactAutoConfigurationTest {
 
         @Step
         fun count(query: Query): Int = calls.incrementAndGet()
+    }
+
+    class AnnotatedCounter {
+        private val calls = AtomicInteger()
+
+        @Step(cache = Cached(name = "counts", key = "#input.id"))
+        fun annotatedCount(query: Query): Int = calls.incrementAndGet()
+    }
+
+    @Step(cache = Cached(name = "counts", key = "#input.id"))
+    class ClassCounter : Function<Query, Int> {
+        private val calls = AtomicInteger()
+
+        override fun apply(query: Query): Int = calls.incrementAndGet()
     }
 }

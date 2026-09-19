@@ -70,6 +70,22 @@ Cache uses Spring's cache abstraction, so any `CacheManager` works (Caffeine, Re
 | `name` | yes | Cache name in the application's `CacheManager` |
 | `key` | no | SpEL expression evaluated against the step input, available as `#input`. Defaults to the input itself (it then needs proper `equals`/`hashCode`). |
 
+Cache can also be declared on the step itself. YAML settings take precedence:
+
+=== "Kotlin"
+
+    ```kotlin
+    @Step(cache = Cached(name = "orders", key = "#input.id"))
+    fun findOrder(request: OrderIdRequest): OrderEntity { /* ... */ }
+    ```
+
+=== "Java"
+
+    ```java
+    @Step(cache = @Cached(name = "orders", key = "#input.id"))
+    public OrderEntity findOrder(OrderIdRequest request) { /* ... */ }
+    ```
+
 The application needs a `CacheManager` bean. With Spring Boot, add `spring-boot-starter-cache` and `@EnableCaching`.
 If a step uses a cache and no `CacheManager` exists, or the cache name is unknown, startup fails.
 

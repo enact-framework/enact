@@ -1,5 +1,7 @@
 package io.enact.core.configuration
 
+import io.enact.core.annotation.Cached
+import io.enact.core.cache.CacheSpec
 import io.enact.core.retry.RetryableSpec
 import io.enact.core.step.MethodAdapter
 import io.enact.core.step.Step
@@ -45,15 +47,15 @@ class StepDiscoveryBeanPostProcessor(
         if (isEligible) {
             val annotation = AnnotationUtils.findAnnotation(targetClass, StepAnnotation::class.java)!!
             val stepName = annotation.name.ifBlank { beanName }
-            registerMethod(stepName, method!!, bean, annotation.retry.takeIf { it.maxRetries > 0 })
+            registerMethod(stepName, method!!, bean, annotation)
             return bean
         }
 
         targetClass.declaredMethods
             .filter { AnnotationUtils.findAnnotation(it, StepAnnotation::class.java) != null }
             .forEach { method ->
-                val retry = method.getAnnotation(StepAnnotation::class.java).retry
-                registerMethod(extractStepName(method), method, bean, retry.takeIf { it.maxRetries > 0 })
+                val annotation = method.getAnnotation(StepAnnotation::class.java)
+                registerMethod(extractStepName(method), method, bean, annotation)
             }
 
         return bean
@@ -63,26 +65,12 @@ class StepDiscoveryBeanPostProcessor(
         stepName: String,
         method: Method,
         bean: Any,
-        retriable: Retryable?,
+        annotation: StepAnnotation,
     ) {
-        val retrySpec =
-            retriable?.run {
-                RetryableSpec(
-                    includes.map { it.java },
-                    excludes.map { it.java },
-                    parseLong(maxRetries, maxRetriesString),
-                    parseDuration(timeout, timeoutString, timeUnit),
-                    parseDuration(delay, delayString, timeUnit),
-                    parseDuration(jitter, jitterString, timeUnit),
-                    parseDouble(multiplier, multiplierString),
-                    parseDuration(maxDelay, maxDelayString, timeUnit),
-                )
-            }
-
         val stepAdapter =
             MethodAdapter(
                 stepName,
-                StepSettings(retry = retrySpec),
+                StepSettings(retry = toRetrySpec(annotation.retry), cache = toCacheSpec(annotation.cache)),
                 bean,
                 method,
                 extractInputType(method),
@@ -91,6 +79,23 @@ class StepDiscoveryBeanPostProcessor(
 
         registrar.register(stepAdapter)
     }
+
+    private fun toRetrySpec(retry: Retryable): RetryableSpec? =
+        retry.takeIf { it.maxRetries > 0 }?.run {
+            RetryableSpec(
+                includes.map { it.java },
+                excludes.map { it.java },
+                parseLong(maxRetries, maxRetriesString),
+                parseDuration(timeout, timeoutString, timeUnit),
+                parseDuration(delay, delayString, timeUnit),
+                parseDuration(jitter, jitterString, timeUnit),
+                parseDouble(multiplier, multiplierString),
+                parseDuration(maxDelay, maxDelayString, timeUnit),
+            )
+        }
+
+    private fun toCacheSpec(cached: Cached): CacheSpec? =
+        cached.name.takeIf { it.isNotBlank() }?.let { CacheSpec(it, cached.key.ifBlank { null }) }
 
     private fun isEligibleType(
         bean: Any,

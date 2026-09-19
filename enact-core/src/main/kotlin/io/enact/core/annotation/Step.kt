@@ -7,4 +7,5 @@ import org.springframework.resilience.annotation.Retryable
 annotation class Step(
     val name: String = "",
     val retry: Retryable = Retryable(maxRetries = 0),
+    val cache: Cached = Cached(),
 )
