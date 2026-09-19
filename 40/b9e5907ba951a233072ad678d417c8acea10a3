@@ -1,0 +1,64 @@
+enact-core/src/main/kotlin/io/enact/core/trigger/TriggerHandler.kt
+  s_abd68a4569a35a::t_6a49a47d8af28e 3-13,16-20,22-23,25-26
+enact-starter-web/src/main/kotlin/io/enact/trigger/rest/RestTriggerHandler.kt
+  s_abd68a4569a35a::t_ee2374832aab53 27
+  s_abd68a4569a35a::t_500a451537ed14 40-42,48,50-51,54,58-60
+  s_abd68a4569a35a::t_8a24818b9b369c 5
+  s_abd68a4569a35a::t_4003e53648dcd9 71,87
+enact-core/src/main/kotlin/io/enact/core/trigger/RestTriggerDefinition.kt
+  s_abd68a4569a35a::t_38d3b154ea8060 1-25
+enact-starter/src/main/kotlin/io/enact/autoconfigure/properties/EnactProperties.kt
+  s_abd68a4569a35a::t_ca0f29daf80397 31-32,35
+  s_abd68a4569a35a::t_f87f3f6039a4da 33-34
+  s_abd68a4569a35a::t_affb0c73de3f56 20
+enact-starter/src/test/kotlin/io/enact/autoconfigure/TriggerActivatorTest.kt
+  s_abd68a4569a35a::t_2a5d529fd2728b 1-159
+mkdocs.yml
+  s_abd68a4569a35a::t_a1bc5c9cd2ee94 95
+enact-starter/src/main/kotlin/io/enact/autoconfigure/TriggerActivator.kt
+  s_abd68a4569a35a::t_4ec1899fcffbbe 19-22
+  s_abd68a4569a35a::t_42432d8b09c488 6,11
+  s_abd68a4569a35a::t_2f64dc2a97e97f 52-60
+  s_abd68a4569a35a::t_0e0c33b5428b5a 35-38,42,50-51
+  s_abd68a4569a35a::t_a6500fd68ebd95 7,9,12,14,16-18,23,28-32,34,39,43-45,48-49,61-84
+enact-core/src/main/kotlin/io/enact/core/trigger/TriggerProperties.kt
+  s_abd68a4569a35a::t_49038aa283df7b 3-5,7,10,12
+  s_abd68a4569a35a::t_7dc6ab3ac82e04 6,8-9
+enact-starter/src/main/kotlin/io/enact/autoconfigure/EnactAutoConfiguration.kt
+  s_abd68a4569a35a::t_06ba205ab179e6 30-31
+  s_abd68a4569a35a::t_e094ea37b6452b 14
+CLAUDE.md
+  s_abd68a4569a35a::t_ad23ed4fc6f328 38,68-71
+  s_abd68a4569a35a::t_f0fb7693385804 11,28,30,37,66-67
+  s_abd68a4569a35a::t_7dc6ab3ac82e04 72
+enact-core/src/main/kotlin/io/enact/core/trigger/TriggerRegistration.kt
+  s_abd68a4569a35a::t_a7c7880e685992 1-18
+docs/custom-trigger.md
+  s_abd68a4569a35a::t_cf6aad9e7acf32 10-12,14-18
+  s_abd68a4569a35a::t_8f772f76f90ef9 207-209
+  s_abd68a4569a35a::t_c2100552149118 4,8-9,13,19-20,24-25,50-51,82-84,148-149,151-152,158-160,169,171,175-178,186,202,210-211
+  s_abd68a4569a35a::t_88cf66c9d3611d 1-3,5-7,21-23,26-49,52-81,85-144,162-168,170,172-174,179-185,187-201,203-206
+  s_abd68a4569a35a::t_02494aeccc2862 145-147,150,153-157,161
+docs/use-cases.md
+  s_abd68a4569a35a::t_ecb89153071f28 19
+enact-starter-web/src/main/kotlin/io/enact/trigger/rest/EnactRestTriggerAutoConfiguration.kt
+  s_abd68a4569a35a::t_ebd6ea472b5316 20
+enact-core/src/main/kotlin/io/enact/core/trigger/TriggerHandlerRegistry.kt
+  s_abd68a4569a35a::t_f1a94aab1cd313 6-12,15,17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "40b9e5907ba951a233072ad678d417c8acea10a3",
+  "prompts": {},
+  "sessions": {
+    "s_abd68a4569a35a": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6de9f127-e0f8-407f-8ebd-760c3e5aea32",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Vladlen Gladis <17303517+gvart@users.noreply.github.com>"
+    }
+  }
+}
