@@ -16,8 +16,21 @@ Content-Type: application/json
     "productCount": 2
 }
 
+### Search orders (query parameters bind by name)
+GET localhost:8080/api/v1/orders?minAmount=1&limit=10
+
 ### Find an order (replace the id)
 GET localhost:8080/api/v1/orders/00000000-0000-0000-0000-000000000000
+
+### Update an order (replace the id; path, header and body are bound)
+PUT localhost:8080/api/v1/orders/00000000-0000-0000-0000-000000000000
+X-User-Id: alice
+Content-Type: application/json
+
+{
+    "amount": 4.56,
+    "productCount": 3
+}
 
 ### Cancel an order (replace the id)
 DELETE localhost:8080/api/v1/orders/00000000-0000-0000-0000-000000000000
