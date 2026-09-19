@@ -30,9 +30,11 @@ enact:
       trigger:                   # optional; without it the use case is injection-only
         rest:
           method: POST
-          path: /api/v1/orders/{customerId}
+          path: /api/v1/orders/{customerId}   # {customerId} → input property customerId
           status: 201
           produces: application/json
+          bind:                  # optional; defaults: path vars + matching query params by name, body → input
+            tenantId: header:X-Tenant-Id   # header:/query:/path:<name>, body, body:<json-pointer>
       steps:
         - step: validateOrderCreation
         - step: saveOrder
@@ -52,6 +54,7 @@ enact:
 2. Each step's output type must equal the next step's input type
 3. Step names must be unique
 4. A step with `cache` settings requires a `CacheManager` bean that knows the cache name
+5. REST `bind` keys must be input properties, `path:` sources must exist in the path, and every path variable must bind to a property
 
 ## Tech Stack
 

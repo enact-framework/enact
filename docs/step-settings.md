@@ -75,15 +75,15 @@ Cache can also be declared on the step itself. YAML settings take precedence:
 === "Kotlin"
 
     ```kotlin
-    @Step(cache = Cached(name = "orders", key = "#input.id"))
-    fun findOrder(request: OrderIdRequest): OrderEntity { /* ... */ }
+    @Step(cache = Cached(name = "orders"))
+    fun findOrder(id: UUID): OrderEntity { /* ... */ }
     ```
 
 === "Java"
 
     ```java
-    @Step(cache = @Cached(name = "orders", key = "#input.id"))
-    public OrderEntity findOrder(OrderIdRequest request) { /* ... */ }
+    @Step(cache = @Cached(name = "orders"))
+    public OrderEntity findOrder(UUID id) { /* ... */ }
     ```
 
 !!! warning
@@ -99,8 +99,8 @@ If a step uses a cache and no `CacheManager` exists, or the cache name is unknow
 
     ```kotlin
     @Step
-    fun cancelOrder(request: OrderIdRequest) {
-        requireNotNull(orders.remove(request.id)) { "Order ${request.id} not found." }
-        cacheManager.getCache("orders")?.evict(request.id)
+    fun cancelOrder(id: UUID) {
+        requireNotNull(orders.remove(id)) { "Order $id not found." }
+        cacheManager.getCache("orders")?.evict(id)
     }
     ```

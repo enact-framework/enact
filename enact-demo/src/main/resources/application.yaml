@@ -3,6 +3,9 @@ spring:
     name: enact-demo
   cache:
     cache-names: orders
+  mvc:
+    problemdetails:
+      enabled: true   # binding errors are answered as RFC 9457 problem details
 
 enact:
   use-cases:
@@ -15,6 +18,7 @@ enact:
       steps:
         - step: generateRandomUUID
 
+    # The JSON body becomes the input (OrderRequest), no binding config needed
     - name: createOrder
       description: Validates and stores a new order
       trigger:
@@ -31,6 +35,18 @@ enact:
               delay: 100ms
         - step: mapOrderResponse
 
+    # Query parameters bind to OrderSearch properties of the same name: ?minAmount=10&limit=5
+    - name: searchOrders
+      description: Lists orders above a minimum amount
+      trigger:
+        rest:
+          method: GET
+          path: /api/v1/orders
+      steps:
+        - step: searchOrders
+        - step: mapOrderResponses
+
+    # A single path variable binds straight to a scalar input: findOrder(id: UUID)
     - name: findOrder
       description: Looks up an order by id (cached)
       trigger:
@@ -39,6 +55,20 @@ enact:
           path: /api/v1/orders/{id}
       steps:
         - step: findOrder       # cached via @Step(cache = Cached(...))
+        - step: mapOrderResponse
+
+    # `id` comes from the path by name; everything else is declared in `bind`
+    - name: updateOrder
+      description: Replaces an order's amount and product count
+      trigger:
+        rest:
+          method: PUT
+          path: /api/v1/orders/{id}
+          bind:
+            updatedBy: header:X-User-Id
+            changes: body
+      steps:
+        - step: updateOrder
         - step: mapOrderResponse
 
     - name: cancelOrder
