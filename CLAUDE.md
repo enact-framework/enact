@@ -15,6 +15,7 @@ Enact follows a use-case-oriented approach: developers define steps as Spring be
 
 ## Steps
 
+- `@StepDefinition` — `@Component` meta-annotation marking a class that defines steps (optional; any Spring bean is scanned)
 - `@Step` on a method (0 or 1 parameter) — name defaults to the method name
 - `@Step` on a class implementing `Function`/`Supplier`/`Consumer`/`Predicate`/Kotlin function type — name defaults to the bean name
 - Beans implementing `io.enact.core.step.Step` — registered under `name`

@@ -59,7 +59,7 @@ A step is a method annotated with `@Step` that takes zero or one argument:
 === "Kotlin"
 
     ```kotlin
-    @Service
+    @StepDefinition
     class OrderValidationService {
         @Step
         fun validateOrderCreation(request: OrderRequest): OrderRequest {
@@ -68,13 +68,13 @@ A step is a method annotated with `@Step` that takes zero or one argument:
         }
     }
 
-    @Service
+    @StepDefinition
     class OrderPersistingService {
         @Step
         fun saveOrder(request: OrderRequest): OrderEntity = TODO("persist")
     }
 
-    @Service
+    @StepDefinition
     class OrderResponseMapperService {
         @Step
         fun mapOrderResponse(order: OrderEntity): OrderResponse = OrderResponse(order.id)
@@ -84,7 +84,7 @@ A step is a method annotated with `@Step` that takes zero or one argument:
 === "Java"
 
     ```java
-    @Service
+    @StepDefinition
     public class OrderValidationService {
         @Step
         public OrderRequest validateOrderCreation(OrderRequest request) {
@@ -95,7 +95,7 @@ A step is a method annotated with `@Step` that takes zero or one argument:
         }
     }
 
-    @Service
+    @StepDefinition
     public class OrderPersistingService {
         @Step
         public OrderEntity saveOrder(OrderRequest request) {
@@ -103,7 +103,7 @@ A step is a method annotated with `@Step` that takes zero or one argument:
         }
     }
 
-    @Service
+    @StepDefinition
     public class OrderResponseMapperService {
         @Step
         public OrderResponse mapOrderResponse(OrderEntity order) {

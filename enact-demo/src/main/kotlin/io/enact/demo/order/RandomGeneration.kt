@@ -1,11 +1,11 @@
 package io.enact.demo.order
 
 import io.enact.core.annotation.Step
-import org.springframework.stereotype.Component
+import io.enact.core.annotation.StepDefinition
 import java.util.UUID
 
 @Step("generateRandomUUID")
-@Component
+@StepDefinition
 class RandomGeneration : () -> RandomGeneration.Response {
     override fun invoke(): Response = Response(UUID.randomUUID())
 

@@ -2,16 +2,16 @@ package io.enact.demo.order
 
 import io.enact.core.annotation.Cached
 import io.enact.core.annotation.Step
+import io.enact.core.annotation.StepDefinition
 import io.enact.demo.order.model.OrderEntity
 import io.enact.demo.order.transfer.OrderRequest
 import io.enact.demo.order.transfer.OrderSearch
 import io.enact.demo.order.transfer.UpdateOrderCommand
 import org.springframework.cache.CacheManager
-import org.springframework.stereotype.Service
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
-@Service
+@StepDefinition
 class OrderPersistingService(
     private val cacheManager: CacheManager,
 ) {
