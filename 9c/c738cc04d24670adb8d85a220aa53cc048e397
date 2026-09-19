@@ -1,0 +1,31 @@
+enact-core/src/main/kotlin/io/enact/core/annotation/Step.kt
+  s_78e1f2563bef82::t_778386f042d686 10
+enact-core/src/main/kotlin/io/enact/core/configuration/StepDiscoveryBeanPostProcessor.kt
+  s_78e1f2563bef82::t_343633f0356f1d 3-4,50,57-58,68,96-98
+  s_78e1f2563bef82::t_f9f8cd4d11558c 93-95
+  s_78e1f2563bef82::t_bac6b844228062 99
+enact-starter/src/test/kotlin/io/enact/autoconfigure/EnactAutoConfigurationTest.kt
+  s_78e1f2563bef82::t_15086a7220eb43 3,15,139-268,343-356
+docs/step-settings.md
+  s_78e1f2563bef82::t_384c3216facac2 73-88
+enact-core/src/main/kotlin/io/enact/core/annotation/Cached.kt
+  s_78e1f2563bef82::t_778386f042d686 1-11
+CLAUDE.md
+  s_78e1f2563bef82::t_29f9b7ce9e291f 39
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "9cc738cc04d24670adb8d85a220aa53cc048e397",
+  "prompts": {},
+  "sessions": {
+    "s_78e1f2563bef82": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f902b94d-8cfe-48f9-8417-8b72d02c4a50",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Vladlen Gladis <17303517+gvart@users.noreply.github.com>"
+    }
+  }
+}
