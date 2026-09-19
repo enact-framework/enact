@@ -1,10 +1,10 @@
 package io.enact.demo.order
 
 import io.enact.core.annotation.Step
+import io.enact.core.annotation.StepDefinition
 import io.enact.demo.order.transfer.OrderRequest
-import org.springframework.stereotype.Service
 
-@Service
+@StepDefinition
 class OrderValidationService {
     @Step
     fun validateOrderCreation(request: OrderRequest): OrderRequest {

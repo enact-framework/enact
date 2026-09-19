@@ -3,6 +3,15 @@
 A step is one unit of work in a use case. It takes a single input and returns a single output.
 Every step has a unique name; use cases refer to steps by that name.
 
+## Where steps live
+
+`@StepDefinition` marks a class that defines steps. It is a `@Component`, so the class is picked up by
+component scanning exactly like `@Service` — it just makes step definitions easy to find in a codebase, and
+takes an optional bean name (`@StepDefinition("orders")`).
+
+Any Spring bean still works: `@Service`, `@Component`, `@Bean` methods and manually registered beans are all
+scanned for steps. `@StepDefinition` is the recommended stereotype, not a requirement.
+
 ## Method steps
 
 Annotate a method of any Spring bean with `@Step`. The step name defaults to the method name.
@@ -10,7 +19,7 @@ Annotate a method of any Spring bean with `@Step`. The step name defaults to the
 === "Kotlin"
 
     ```kotlin
-    @Service
+    @StepDefinition
     class OrderPersistingService {
         @Step
         fun saveOrder(request: OrderRequest): OrderEntity { /* ... */ }
@@ -23,7 +32,7 @@ Annotate a method of any Spring bean with `@Step`. The step name defaults to the
 === "Java"
 
     ```java
-    @Service
+    @StepDefinition
     public class OrderPersistingService {
         @Step
         public OrderEntity saveOrder(OrderRequest request) { /* ... */ }
@@ -46,7 +55,7 @@ when the class is annotated with `@Step`. The step name defaults to the bean nam
 
     ```kotlin
     @Step("generateRandomUUID")
-    @Component
+    @StepDefinition
     class RandomGeneration : () -> RandomGeneration.Response {
         override fun invoke() = Response(UUID.randomUUID())
 
@@ -58,7 +67,7 @@ when the class is annotated with `@Step`. The step name defaults to the bean nam
 
     ```java
     @Step(name = "generateRandomUUID")
-    @Component
+    @StepDefinition
     public class RandomGeneration implements Supplier<RandomGeneration.Response> {
         @Override
         public Response get() {
@@ -76,7 +85,7 @@ A bean implementing `io.enact.core.step.Step` is registered under its `name`:
 === "Kotlin"
 
     ```kotlin
-    @Component
+    @StepDefinition
     class Normalize : Step.InOut<String, String> {
         override val name = "normalize"
 
@@ -87,7 +96,7 @@ A bean implementing `io.enact.core.step.Step` is registered under its `name`:
 === "Java"
 
     ```java
-    @Component
+    @StepDefinition
     public class Normalize implements Step.InOut<String, String> {
         @Override
         public String getName() {

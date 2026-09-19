@@ -6,7 +6,7 @@ Write small steps as ordinary Spring beans, wire them into use cases in `applica
 validate the chain at startup, register each use case as an injectable bean, and expose it over HTTP.
 
 ```kotlin
-@Service
+@StepDefinition
 class OrderService {
     @Step fun validateOrder(request: OrderRequest): OrderRequest = request.also { require(it.amount > 0) }
     @Step fun saveOrder(request: OrderRequest): OrderEntity = TODO("persist")
