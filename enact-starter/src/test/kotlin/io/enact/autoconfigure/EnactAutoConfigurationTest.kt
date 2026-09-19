@@ -34,6 +34,20 @@ class EnactAutoConfigurationTest {
     }
 
     @Test
+    fun `should fail startup on unknown group`() {
+        runner
+            .withBean(Greeter::class.java)
+            .withPropertyValues(
+                "enact.use-cases[0].name=greet",
+                "enact.use-cases[0].group=admin",
+                "enact.use-cases[0].steps[0].step=greet",
+            ).run { context ->
+                assertThat(context).hasFailed()
+                assertThat(context.startupFailure).hasStackTraceContaining("unknown group 'admin'")
+            }
+    }
+
+    @Test
     fun `should retry step configured in yaml`() {
         runner
             .withBean(Flaky::class.java)

@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 
 @SpringBootTest(
+    classes = [RestTriggerHandlerTest.App::class],
     properties = [
         "enact.use-cases[0].name=createOrder",
         "enact.use-cases[0].trigger.rest.method=POST",

@@ -41,6 +41,10 @@ open class DefinitionLoaderConfiguration :
 
         properties.useCases.forEach { useCaseDefinition ->
             val name = useCaseDefinition.name
+            val group = useCaseDefinition.group
+            require(group == null || group in properties.groups) {
+                "Use case '$name' references unknown group '$group'. Known: ${properties.groups.keys}"
+            }
             val beanDefinition =
                 RootBeanDefinition().apply {
                     setBeanClass(UseCase::class.java)
