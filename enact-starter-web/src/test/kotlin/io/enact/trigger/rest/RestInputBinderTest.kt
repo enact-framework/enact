@@ -21,7 +21,7 @@ class RestInputBinderTest {
         path: String,
         bind: Map<String, String> = emptyMap(),
         inputType: Class<*> = Order::class.java,
-    ) = RestInputBinder("placeOrder", path, bind, inputType, jsonMapper)
+    ) = RestInputBinder.of("placeOrder", path, bind, inputType, jsonMapper)
 
     @Test
     fun `should accept valid bindings`() {

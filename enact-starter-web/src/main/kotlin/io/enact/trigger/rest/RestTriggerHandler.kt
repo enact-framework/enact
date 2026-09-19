@@ -43,7 +43,7 @@ class RestTriggerHandler(
         }
         require(definition.path.isNotBlank()) { "Missing path for REST trigger of use case '$useCaseName'" }
 
-        val inputBinder = RestInputBinder(useCaseName, definition.path, definition.bind, useCase.inputType, jsonMapper)
+        val inputBinder = RestInputBinder.of(useCaseName, definition.path, definition.bind, useCase.inputType, jsonMapper)
         registrations.add(Registration(useCaseName, definition, useCase, inputBinder))
     }
 

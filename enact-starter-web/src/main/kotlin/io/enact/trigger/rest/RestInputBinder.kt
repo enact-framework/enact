@@ -14,119 +14,120 @@ import tools.jackson.databind.node.ObjectNode
  * Builds a use case input from an HTTP request.
  *
  * Path variables and query parameters bind to input properties of the same name, the JSON body to the input itself;
- * [bind] maps properties to any other source. A property gets its value from exactly one source. Bindings are
- * validated on creation, so misconfiguration fails at startup.
+ * `bind` maps properties to any other source. A property gets its value from exactly one source. Bindings are
+ * validated by [of], so misconfiguration fails at startup.
  */
-internal class RestInputBinder(
-    private val useCaseName: String,
-    path: String,
-    bind: Map<String, String>,
-    private val inputType: Class<*>,
-    private val jsonMapper: JsonMapper,
-) {
-    private sealed interface Source {
-        data class Header(
-            val name: String,
-        ) : Source {
-            override fun toString() = "header $name"
-        }
-
-        data class Query(
-            val name: String,
-        ) : Source {
-            override fun toString() = "query parameter $name"
-        }
-
-        data class Path(
-            val name: String,
-        ) : Source {
-            override fun toString() = "path variable {$name}"
-        }
-
-        data class Body(
-            val pointer: JsonPointer,
-        ) : Source {
-            override fun toString() = if (pointer.matches()) "body" else "body $pointer"
-        }
-    }
-
-    private val pathVariables = PATH_VARIABLE.findAll(path).map { it.groupValues[1] }.toList()
-    private val sources = bind.mapValues { (property, source) -> parseSource(property, source) }
-
-    /** Properties bound from a single source, explicitly or as a path variable of the same name. */
-    private val bindings: Map<String, Source>
-
-    /** Unbound properties that take a query parameter of the same name, if present. */
-    private val queryProperties: Set<String>
-
-    /** Properties accepting several values, e.g. a repeated query parameter. */
-    private val multiValued: Set<String>
-
-    /** Whether the JSON body is the input itself rather than bound to properties. */
-    private val bodyAtRoot = sources.values.none { it is Source.Body }
-
-    private val kind: InputKind
-
-    init {
-        val implicitPathVariables =
-            pathVariables -
-                sources.values
-                    .filterIsInstance<Source.Path>()
-                    .map { it.name }
-                    .toSet()
-        val properties = inputProperties()
-
-        invalidIf(sources.values.count { it is Source.Body && it.pointer.matches() } > 1) { "binds the whole body more than once" }
-        kind =
-            when {
-                inputType in NO_INPUT_TYPES -> {
-                    invalidIf(bind.isNotEmpty()) { "declares bind but takes no input" }
-                    InputKind.NONE
-                }
-                properties == null -> {
-                    invalidIf(bind.isNotEmpty() || pathVariables.size > 1) {
-                        "binds several values to input ${inputType.simpleName}; use a data class instead"
-                    }
-                    InputKind.VALUE
-                }
-                else -> {
-                    sources.keys.filterNot { it in properties }.forEach {
-                        invalid("binds unknown property '$it' of ${inputType.simpleName}. Known: ${properties.keys}")
-                    }
-                    implicitPathVariables.filterNot { it in properties && it !in sources }.forEach {
-                        invalid("has path variable {$it} that matches no property of ${inputType.simpleName}; add one or bind it")
-                    }
-                    InputKind.OBJECT
-                }
-            }
-
-        bindings = sources + implicitPathVariables.associateWith { Source.Path(it) }
-        queryProperties = properties.orEmpty().keys - bindings.keys
-        multiValued = properties.orEmpty().filterValues { it }.keys
-    }
-
+internal sealed class RestInputBinder {
     /** Reads the input for [request]; answers `400 Bad Request` if the request does not fit the input type. */
     fun bind(request: ServerRequest): Any =
         try {
-            when (kind) {
-                InputKind.NONE -> Unit
-                InputKind.VALUE -> readValue(request)
-                InputKind.OBJECT -> readObject(request)
-            }
+            read(request)
         } catch (e: JacksonException) {
             throw badRequest("Invalid request: ${e.originalMessage}", e)
         }
 
-    private fun readValue(request: ServerRequest): Any {
+    protected abstract fun read(request: ServerRequest): Any
+
+    companion object {
+        /** Validates the bindings of a use case and returns the binder for its input type. */
+        fun of(
+            useCaseName: String,
+            path: String,
+            bind: Map<String, String>,
+            inputType: Class<*>,
+            jsonMapper: JsonMapper,
+        ): RestInputBinder {
+            fun invalid(reason: String): Nothing = throw IllegalArgumentException("REST trigger of use case '$useCaseName' $reason")
+
+            val pathVariables = PATH_VARIABLE.findAll(path).map { it.groupValues[1] }.toList()
+            val sources =
+                bind.mapValues { (property, spec) ->
+                    Source.parse(spec)
+                        ?: invalid("binds '$property' to invalid source '$spec'. Expected header:, query:, path:, body or body:/pointer")
+                }
+            sources.forEach { (property, source) ->
+                if (source is Source.Path && source.name !in pathVariables) {
+                    invalid("binds '$property' to path variable {${source.name}}, which is not in the path")
+                }
+            }
+            if (sources.values.count { it is Source.Body && it.pointer.matches() } > 1) invalid("binds the whole body more than once")
+
+            if (inputType in NO_INPUT_TYPES) {
+                if (bind.isNotEmpty()) invalid("declares bind but takes no input")
+                return NoInput
+            }
+
+            val properties = jsonMapper.beanProperties(inputType)
+            if (properties == null) {
+                if (bind.isNotEmpty() || pathVariables.size > 1) {
+                    invalid("binds several values to input ${inputType.simpleName}; use a data class instead")
+                }
+                return ScalarInput(pathVariables.singleOrNull(), inputType, jsonMapper)
+            }
+
+            val implicitPathVariables =
+                pathVariables -
+                    sources.values
+                        .filterIsInstance<Source.Path>()
+                        .map { it.name }
+                        .toSet()
+            sources.keys.filterNot { it in properties }.forEach {
+                invalid("binds unknown property '$it' of ${inputType.simpleName}. Known: ${properties.keys}")
+            }
+            implicitPathVariables.filter { it !in properties || it in sources }.forEach {
+                invalid("has path variable {$it} that matches no property of ${inputType.simpleName}; add one or bind it")
+            }
+
+            val bindings = sources + implicitPathVariables.associateWith { Source.Path(it) }
+            return BeanInput(
+                bindings = bindings,
+                queryProperties = properties.keys - bindings.keys,
+                multiValued = properties.filterValues { it }.keys,
+                bodyAtRoot = sources.values.none { it is Source.Body },
+                inputType = inputType,
+                jsonMapper = jsonMapper,
+            )
+        }
+    }
+}
+
+/** A use case without input: the request is not read. */
+private data object NoInput : RestInputBinder() {
+    override fun read(request: ServerRequest): Any = Unit
+}
+
+/** A single value: the path variable if the path has exactly one, the body otherwise. */
+private class ScalarInput(
+    private val pathVariable: String?,
+    private val inputType: Class<*>,
+    private val jsonMapper: JsonMapper,
+) : RestInputBinder() {
+    override fun read(request: ServerRequest): Any {
         val node =
-            pathVariables.singleOrNull()?.let { jsonMapper.nodeFactory.stringNode(request.pathVariable(it)) }
-                ?: readBody(request)
+            pathVariable?.let { jsonMapper.nodeFactory.stringNode(request.pathVariable(it)) }
+                ?: request.jsonBody(jsonMapper)
                 ?: throw badRequest("Request body is required")
         return jsonMapper.treeToValue(node, inputType) ?: throw badRequest("Request body is required")
     }
+}
 
-    private fun readObject(request: ServerRequest): Any {
-        val body = readBody(request)
+/** An object whose properties are filled from their sources, and from the body unless it is bound elsewhere. */
+private class BeanInput(
+    /** Properties owned by a source; the body must not contain them, whether the source is sent or not. */
+    private val bindings: Map<String, Source>,
+    /** Remaining properties, taking a query parameter of the same name if sent. */
+    queryProperties: Set<String>,
+    /** Properties accepting several values, e.g. a repeated query parameter. */
+    private val multiValued: Set<String>,
+    /** Whether the JSON body is the input itself rather than bound to properties. */
+    private val bodyAtRoot: Boolean,
+    private val inputType: Class<*>,
+    private val jsonMapper: JsonMapper,
+) : RestInputBinder() {
+    private val sources = bindings + queryProperties.associateWith { Source.Query(it) }
+
+    override fun read(request: ServerRequest): Any {
+        val body = request.jsonBody(jsonMapper)
         val input: ObjectNode =
             when {
                 !bodyAtRoot || body == null -> jsonMapper.createObjectNode()
@@ -134,30 +135,27 @@ internal class RestInputBinder(
                 else -> throw badRequest("Request body must be a JSON object")
             }
 
-        bindings.forEach { (property, source) ->
+        bindings.keys.firstOrNull(input::has)?.let { throw conflict(it, bindings.getValue(it)) }
+        sources.forEach { (property, source) ->
+            val value = source.read(request, body, property) ?: return@forEach
             if (input.has(property)) throw conflict(property, source)
-            val value =
-                when (source) {
-                    is Source.Header -> textValue(property, request.headers().header(source.name))
-                    is Source.Query -> textValue(property, request.params()[source.name].orEmpty())
-                    is Source.Path -> textValue(property, listOf(request.pathVariable(source.name)))
-                    is Source.Body -> body?.at(source.pointer)?.takeUnless { it.isMissingNode }
-                }
-            value?.let { input.set(property, it) }
-        }
-        queryProperties.forEach { property ->
-            val value = textValue(property, request.params()[property].orEmpty()) ?: return@forEach
-            if (input.has(property)) throw conflict(property, Source.Query(property))
             input.set(property, value)
         }
 
         return jsonMapper.treeToValue(input, inputType)
     }
 
-    private fun readBody(request: ServerRequest): JsonNode? {
-        val body = request.body(ByteArray::class.java)
-        return if (body.isEmpty()) null else jsonMapper.readTree(body)
-    }
+    private fun Source.read(
+        request: ServerRequest,
+        body: JsonNode?,
+        property: String,
+    ): JsonNode? =
+        when (this) {
+            is Source.Header -> textValue(property, request.headers().header(name))
+            is Source.Query -> textValue(property, request.params()[name].orEmpty())
+            is Source.Path -> textValue(property, listOf(request.pathVariable(name)))
+            is Source.Body -> body?.at(pointer)?.takeUnless { it.isMissingNode }
+        }
 
     /** Request strings as a JSON value: `null` if absent, an array for multi-valued properties. */
     private fun textValue(
@@ -171,61 +169,75 @@ internal class RestInputBinder(
             else -> jsonMapper.nodeFactory.stringNode(values.single())
         }
 
-    /** Deserializable properties of the input type and whether each takes several values; `null` for non-objects. */
-    private fun inputProperties(): Map<String, Boolean>? {
-        if (inputType in NO_INPUT_TYPES) return null
-        // Ask Jackson itself, so @JsonProperty names, Kotlin/record creators and custom deserializers apply
-        val context = jsonMapper._deserializationContext()
-        val type = jsonMapper.constructType(inputType)
-        if (context.findRootValueDeserializer(type) !is BeanDeserializerBase) return null
-
-        return context
-            .introspectBeanDescriptionForCreation(type)
-            .findProperties()
-            .associate { it.name to (it.primaryType.isCollectionLikeType || it.primaryType.isArrayType) }
-    }
-
-    private fun parseSource(
-        property: String,
-        source: String,
-    ): Source {
-        val kind = source.substringBefore(':').trim()
-        val name = source.substringAfter(':', "").trim()
-        return when {
-            kind == "body" && name.isEmpty() -> Source.Body(JsonPointer.empty())
-            kind == "body" && name.startsWith('/') -> Source.Body(JsonPointer.compile(name))
-            name.isEmpty() -> invalid("binds '$property' to invalid source '$source'")
-            kind == "header" -> Source.Header(name)
-            kind == "query" -> Source.Query(name)
-            kind == "path" && name in pathVariables -> Source.Path(name)
-            kind == "path" -> invalid("binds '$property' to path variable {$name}, which is not in the path")
-            else -> invalid("binds '$property' to invalid source '$source'. Expected header:, query:, path:, body or body:/pointer")
-        }
-    }
-
     private fun conflict(
         property: String,
         source: Source,
     ) = badRequest("'$property' is bound from $source and must not be sent in the request body")
+}
 
-    private fun invalidIf(
-        condition: Boolean,
-        reason: () -> String,
-    ) {
-        if (condition) invalid(reason())
+private sealed interface Source {
+    data class Header(
+        val name: String,
+    ) : Source {
+        override fun toString() = "header $name"
     }
 
-    private fun invalid(reason: String): Nothing = throw IllegalArgumentException("REST trigger of use case '$useCaseName' $reason")
+    data class Query(
+        val name: String,
+    ) : Source {
+        override fun toString() = "query parameter $name"
+    }
 
-    private fun badRequest(
-        reason: String,
-        cause: Throwable? = null,
-    ) = ResponseStatusException(HttpStatus.BAD_REQUEST, reason, cause)
+    data class Path(
+        val name: String,
+    ) : Source {
+        override fun toString() = "path variable {$name}"
+    }
 
-    private enum class InputKind { NONE, VALUE, OBJECT }
+    data class Body(
+        val pointer: JsonPointer,
+    ) : Source {
+        override fun toString() = if (pointer.matches()) "body" else "body $pointer"
+    }
 
-    private companion object {
-        val NO_INPUT_TYPES = setOf(Unit::class.java, Void.TYPE, Void::class.java)
-        val PATH_VARIABLE = Regex("""\{\*?([^}:]+)(?::[^}]*)?}""")
+    companion object {
+        /** Parses `header:<name>`, `query:<name>`, `path:<name>`, `body` or `body:<json-pointer>`; `null` if malformed. */
+        fun parse(spec: String): Source? {
+            val kind = spec.substringBefore(':').trim()
+            val name = spec.substringAfter(':', "").trim()
+            return when {
+                kind == "body" && name.isEmpty() -> Body(JsonPointer.empty())
+                kind == "body" -> runCatching { JsonPointer.compile(name) }.getOrNull()?.let(::Body)
+                name.isEmpty() -> null
+                kind == "header" -> Header(name)
+                kind == "query" -> Query(name)
+                kind == "path" -> Path(name)
+                else -> null
+            }
+        }
     }
 }
+
+private fun ServerRequest.jsonBody(jsonMapper: JsonMapper): JsonNode? =
+    body(ByteArray::class.java).takeUnless { it.isEmpty() }?.let(jsonMapper::readTree)
+
+/** Deserializable properties and whether each takes several values; `null` if Jackson does not read [type] as an object. */
+private fun JsonMapper.beanProperties(type: Class<*>): Map<String, Boolean>? {
+    // Ask Jackson itself, so @JsonProperty names, Kotlin/record creators and custom deserializers apply
+    val context = _deserializationContext()
+    val javaType = constructType(type)
+    if (context.findRootValueDeserializer(javaType) !is BeanDeserializerBase) return null
+
+    return context
+        .introspectBeanDescriptionForCreation(javaType)
+        .findProperties()
+        .associate { it.name to (it.primaryType.isCollectionLikeType || it.primaryType.isArrayType) }
+}
+
+private fun badRequest(
+    reason: String,
+    cause: Throwable? = null,
+) = ResponseStatusException(HttpStatus.BAD_REQUEST, reason, cause)
+
+private val NO_INPUT_TYPES = setOf(Unit::class.java, Void.TYPE, Void::class.java)
+private val PATH_VARIABLE = Regex("""\{\*?([^}:]+)(?::[^}]*)?}""")
