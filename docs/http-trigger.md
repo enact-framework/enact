@@ -112,6 +112,7 @@ A search endpoint needs no body at all: `GET /api/v1/orders?minAmount=10&limit=5
 | `header:<name>` | request header |
 | `query:<name>` | query parameter |
 | `path:<name>` | path variable, e.g. `reference: path:id` to bind `{id}` to a property named differently |
+| `attribute:<name>` | request attribute, typically set by a [filter](#filters-and-groups) |
 | `body` | the whole JSON body |
 | `body:<pointer>` | part of the JSON body, e.g. `body:/customer/address` |
 
@@ -173,6 +174,83 @@ Configuration mistakes fail at startup instead:
 - `bind` or several path variables for a scalar input, or `bind` for a use case without input.
 
 If the use case has no input (its first step takes no parameter), the request is not read.
+
+## Filters and groups
+
+Cross-cutting concerns such as authentication, tenant checks or auditing are handled by filters: plain Spring
+`HandlerFilterFunction` beans that wrap the endpoint. Use cases belong to a `group`, and each group lists the
+filters applied to its endpoints:
+
+```yaml
+enact:
+  groups:
+    default: # (1)!
+      filters: [bearerAuth]
+    admin:
+      filters: [bearerAuth, requireAdmin] # (2)!
+    public:
+      filters: []
+  use-cases:
+    - name: createOrder # (3)!
+      trigger:
+        rest: { method: POST, path: /api/v1/orders }
+      steps: [...]
+    - name: cancelOrder
+      group: admin
+      trigger:
+        rest:
+          method: DELETE
+          path: /api/v1/orders/{id}
+          filters: [audit] # (4)!
+          bind:
+            cancelledBy: attribute:userId # (5)!
+      steps: [...]
+    - name: generateId
+      group: public
+      ...
+```
+
+1.  Applies to every use case without a `group`. Without a `default` group, such use cases have no filters.
+2.  Filters run in list order; the first one is the outermost.
+3.  No `group`, so the `default` group applies.
+4.  Appended after the group's filters: `bearerAuth` → `requireAdmin` → `audit`.
+5.  A value a filter stored as a request attribute.
+
+A filter either rejects the request by returning a response, or passes it on with `next.handle(request)`. Filters
+run before the request is bound to the use case input, so a rejected request is never read:
+
+=== "Kotlin"
+
+    ```kotlin
+    @Bean
+    fun bearerAuth() =
+        HandlerFilterFunction<ServerResponse, ServerResponse> { request, next ->
+            val userId = tokens.verify(request.headers().firstHeader(HttpHeaders.AUTHORIZATION))
+                ?: return@HandlerFilterFunction ServerResponse.status(HttpStatus.UNAUTHORIZED).build()
+            request.attributes()["userId"] = userId
+            next.handle(request)
+        }
+    ```
+
+=== "Java"
+
+    ```java
+    @Bean
+    HandlerFilterFunction<ServerResponse, ServerResponse> bearerAuth() {
+        return (request, next) -> {
+            var userId = tokens.verify(request.headers().firstHeader(HttpHeaders.AUTHORIZATION));
+            if (userId == null) return ServerResponse.status(HttpStatus.UNAUTHORIZED).build();
+            request.attributes().put("userId", userId);
+            return next.handle(request);
+        };
+    }
+    ```
+
+Configuration mistakes fail at startup: a use case referencing an unknown group, or a filter name that is not a
+`HandlerFilterFunction` bean.
+
+Enact endpoints are ordinary Spring MVC routes, so Spring Security (a `SecurityFilterChain` matching their paths)
+works as well, either instead of filters or alongside them.
 
 ## Response
 

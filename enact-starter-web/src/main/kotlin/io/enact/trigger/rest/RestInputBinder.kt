@@ -43,7 +43,9 @@ internal sealed class RestInputBinder {
             val sources =
                 bind.mapValues { (property, spec) ->
                     Source.parse(spec)
-                        ?: invalid("binds '$property' to invalid source '$spec'. Expected header:, query:, path:, body or body:/pointer")
+                        ?: invalid(
+                            "binds '$property' to invalid source '$spec'. Expected header:, query:, path:, attribute:, body or body:/pointer",
+                        )
                 }
             sources.forEach { (property, source) ->
                 if (source is Source.Path && source.name !in pathVariables) {
@@ -154,6 +156,7 @@ private class BeanInput(
             is Source.Header -> textValue(property, request.headers().header(name))
             is Source.Query -> textValue(property, request.params()[name].orEmpty())
             is Source.Path -> textValue(property, listOf(request.pathVariable(name)))
+            is Source.Attribute -> request.attribute(name).orElse(null)?.let { jsonMapper.valueToTree<JsonNode>(it) }
             is Source.Body -> body?.at(pointer)?.takeUnless { it.isMissingNode }
         }
 
@@ -194,6 +197,12 @@ private sealed interface Source {
         override fun toString() = "path variable {$name}"
     }
 
+    data class Attribute(
+        val name: String,
+    ) : Source {
+        override fun toString() = "request attribute $name"
+    }
+
     data class Body(
         val pointer: JsonPointer,
     ) : Source {
@@ -201,7 +210,7 @@ private sealed interface Source {
     }
 
     companion object {
-        /** Parses `header:<name>`, `query:<name>`, `path:<name>`, `body` or `body:<json-pointer>`; `null` if malformed. */
+        /** Parses `header:<name>`, `query:<name>`, `path:<name>`, `attribute:<name>`, `body` or `body:<json-pointer>`; `null` if malformed. */
         fun parse(spec: String): Source? {
             val kind = spec.substringBefore(':').trim()
             val name = spec.substringAfter(':', "").trim()
@@ -212,6 +221,7 @@ private sealed interface Source {
                 kind == "header" -> Header(name)
                 kind == "query" -> Query(name)
                 kind == "path" -> Path(name)
+                kind == "attribute" -> Attribute(name)
                 else -> null
             }
         }

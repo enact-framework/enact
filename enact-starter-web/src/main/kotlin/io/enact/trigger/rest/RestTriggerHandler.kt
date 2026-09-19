@@ -1,12 +1,16 @@
 package io.enact.trigger.rest
 
+import io.enact.autoconfigure.properties.EnactProperties
 import io.enact.core.trigger.RestTriggerDefinition
 import io.enact.core.trigger.TriggerHandler
 import io.enact.core.trigger.TriggerProperties
 import io.enact.core.usecase.UseCase
+import org.springframework.beans.BeansException
+import org.springframework.beans.factory.ListableBeanFactory
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatusCode
 import org.springframework.http.MediaType
+import org.springframework.web.servlet.function.HandlerFilterFunction
 import org.springframework.web.servlet.function.HandlerFunction
 import org.springframework.web.servlet.function.RequestPredicates
 import org.springframework.web.servlet.function.RouterFunction
@@ -18,6 +22,8 @@ import java.util.Optional
 
 class RestTriggerHandler(
     private val jsonMapper: JsonMapper,
+    private val properties: EnactProperties,
+    private val beanFactory: ListableBeanFactory,
 ) : TriggerHandler<RestTriggerDefinition> {
     override val triggerType = "rest"
 
@@ -29,6 +35,7 @@ class RestTriggerHandler(
         val definition: RestTriggerDefinition,
         val useCase: UseCase<Any, Any>,
         val inputBinder: RestInputBinder,
+        val filters: List<HandlerFilterFunction<ServerResponse, ServerResponse>>,
     )
 
     override fun extractDefinition(trigger: TriggerProperties): RestTriggerDefinition? = trigger.rest
@@ -44,7 +51,26 @@ class RestTriggerHandler(
         require(definition.path.isNotBlank()) { "Missing path for REST trigger of use case '$useCaseName'" }
 
         val inputBinder = RestInputBinder.of(useCaseName, definition.path, definition.bind, useCase.inputType, jsonMapper)
-        registrations.add(Registration(useCaseName, definition, useCase, inputBinder))
+        registrations.add(Registration(useCaseName, definition, useCase, inputBinder, filters(useCaseName, definition)))
+    }
+
+    /** Filters of the use case's group (or `default`), then those of its trigger. */
+    @Suppress("UNCHECKED_CAST")
+    private fun filters(
+        useCaseName: String,
+        definition: RestTriggerDefinition,
+    ): List<HandlerFilterFunction<ServerResponse, ServerResponse>> {
+        val group = properties.useCases.firstOrNull { it.name == useCaseName }?.group ?: DEFAULT_GROUP
+        return (properties.groups[group]?.filters.orEmpty() + definition.filters).map { name ->
+            try {
+                beanFactory.getBean(name, HandlerFilterFunction::class.java) as HandlerFilterFunction<ServerResponse, ServerResponse>
+            } catch (e: BeansException) {
+                throw IllegalArgumentException(
+                    "REST trigger of use case '$useCaseName' references filter '$name', which is not a HandlerFilterFunction bean",
+                    e,
+                )
+            }
+        }
     }
 
     override fun activate() {
@@ -54,9 +80,11 @@ class RestTriggerHandler(
                 .apply {
                     registrations.forEach { reg ->
                         val method = HttpMethod.valueOf(reg.definition.method.uppercase())
-                        route(RequestPredicates.method(method).and(RequestPredicates.path(reg.definition.path))) {
-                            handle(it, reg)
-                        }
+                        val handler = HandlerFunction { handle(it, reg) }
+                        route(
+                            RequestPredicates.method(method).and(RequestPredicates.path(reg.definition.path)),
+                            reg.filters.reduceOrNull { outer, inner -> outer.andThen(inner) }?.apply(handler) ?: handler,
+                        )
                     }
                 }.build()
     }
@@ -79,6 +107,7 @@ class RestTriggerHandler(
     }
 
     private companion object {
+        const val DEFAULT_GROUP = "default"
         val SUPPORTED_METHODS = setOf("GET", "POST", "PUT", "PATCH", "DELETE")
         val NO_CONTENT_TYPES = setOf(Unit::class.java, Void.TYPE, Void::class.java)
     }

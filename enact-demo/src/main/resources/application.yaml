@@ -8,9 +8,19 @@ spring:
       enabled: true   # binding errors are answered as RFC 9457 problem details
 
 enact:
+  # Use cases in a group are wrapped by its filters (HandlerFilterFunction beans, see DemoFilters)
+  groups:
+    default:                      # applies to every use case without a `group`
+      filters: [requestLog]
+    authenticated:                # filters run in order: requestLog, then requireUser
+      filters: [requestLog, requireUser]
+    public:                       # opts out of the default group
+      filters: []
+
   use-cases:
     - name: generateId
       description: Generates a random identifier
+      group: public
       trigger:
         rest:
           method: GET
@@ -60,12 +70,14 @@ enact:
     # `id` comes from the path by name; everything else is declared in `bind`
     - name: updateOrder
       description: Replaces an order's amount and product count
+      group: authenticated
       trigger:
         rest:
           method: PUT
           path: /api/v1/orders/{id}
+          filters: [auditUpdate]        # runs after the group's filters
           bind:
-            updatedBy: header:X-User-Id
+            updatedBy: attribute:userId   # set by the requireUser filter
             changes: body
       steps:
         - step: updateOrder

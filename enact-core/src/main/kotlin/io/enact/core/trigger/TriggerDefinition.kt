@@ -16,10 +16,12 @@ data class RestTriggerDefinition(
     /** URL path for the REST endpoint. May contain path variables, e.g. `/orders/{id}`. */
     val path: String = "",
     /**
-     * Input property to request source: `header:<name>`, `query:<name>`, `path:<name>`, `body` or
-     * `body:<json-pointer>`, e.g. `tenantId: header:X-Tenant-Id`.
+     * Input property to request source: `header:<name>`, `query:<name>`, `path:<name>`, `attribute:<name>` (a
+     * request attribute, e.g. set by a filter), `body` or `body:<json-pointer>`, e.g. `tenantId: header:X-Tenant-Id`.
      */
     val bind: Map<String, String> = emptyMap(),
+    /** Names of `HandlerFilterFunction` beans applied after the filters of the use case's group. */
+    val filters: List<String> = emptyList(),
     /** Media type the endpoint produces. */
     val produces: String = "application/json",
     /** HTTP status code for successful responses. */

@@ -24,17 +24,24 @@ Enact follows a use-case-oriented approach: developers define steps as Spring be
 ```yaml
 enact:
   enabled: true
+  groups:                        # optional; REST filters shared by use cases of a group
+    default:                     # applies to use cases without `group`
+      filters: [bearerAuth]      # HandlerFilterFunction bean names, outermost first
+    admin:
+      filters: [bearerAuth, requireAdmin]
   use-cases:
     - name: createOrder          # use case bean name
       description: ...
+      group: admin               # optional; defaults to `default`
       trigger:                   # optional; without it the use case is injection-only
         rest:
           method: POST
           path: /api/v1/orders/{customerId}   # {customerId} → input property customerId
           status: 201
           produces: application/json
+          filters: [audit]       # optional; appended after the group's filters
           bind:                  # optional; defaults: path vars + matching query params by name, body → input
-            tenantId: header:X-Tenant-Id   # header:/query:/path:<name>, body, body:<json-pointer>
+            tenantId: header:X-Tenant-Id   # header:/query:/path:/attribute:<name>, body, body:<json-pointer>
       steps:
         - step: validateOrderCreation
         - step: saveOrder
@@ -55,6 +62,7 @@ enact:
 3. Step names must be unique
 4. A step with `cache` settings requires a `CacheManager` bean that knows the cache name
 5. REST `bind` keys must be input properties, `path:` sources must exist in the path, and every path variable must bind to a property
+6. A use case `group` must be declared in `enact.groups`, and every filter name must be a `HandlerFilterFunction` bean
 
 ## Tech Stack
 

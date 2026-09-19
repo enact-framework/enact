@@ -31,6 +31,12 @@ class RestInputBinderTest {
     }
 
     @Test
+    fun `should accept attribute binding`() {
+        assertThatCode { binder("/customers/{customerId}/orders", mapOf("tenantId" to "attribute:tenant")) }
+            .doesNotThrowAnyException()
+    }
+
+    @Test
     fun `should reject binding to unknown property`() {
         assertThatThrownBy { binder("/orders", mapOf("tenant" to "header:X-Tenant-Id")) }
             .isInstanceOf(IllegalArgumentException::class.java)
