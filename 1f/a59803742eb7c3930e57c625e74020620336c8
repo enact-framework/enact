@@ -1,0 +1,61 @@
+enact-starter-web/src/test/kotlin/io/enact/trigger/rest/RestTriggerFiltersTest.kt
+  s_6bf983b64d3c58::t_15fd708bbbfca8 23,91,102
+  s_6bf983b64d3c58::t_3337508f10d6fa 88,99
+  s_6bf983b64d3c58::t_2974da8e1af741 1-22,24-87,89-90,92-98,100-101,103-176
+enact-starter-web/src/main/kotlin/io/enact/trigger/rest/EnactRestTriggerAutoConfiguration.kt
+  s_6bf983b64d3c58::t_249bb39b96a96f 15
+  s_6bf983b64d3c58::t_ef46ac893ace0a 3-4,18-22
+  s_6bf983b64d3c58::t_f673e09952dc6e 6
+enact-starter/src/main/kotlin/io/enact/autoconfigure/properties/EnactProperties.kt
+  s_6bf983b64d3c58::t_a58ed6ce979ce4 16-17,19-23,29-30
+enact-starter/src/test/kotlin/io/enact/autoconfigure/EnactAutoConfigurationTest.kt
+  s_6bf983b64d3c58::t_07078c899d552b 37-45,47-49
+  s_6bf983b64d3c58::t_15fd708bbbfca8 46
+  s_6bf983b64d3c58::t_bd06f5160f330d 36
+enact-demo/src/main/resources/application.yaml
+  s_6bf983b64d3c58::t_29764d6e49f6e1 12,19,73,80
+  s_6bf983b64d3c58::t_dd75ca3b8d783d 11,13-18,23,78
+enact-starter-web/src/test/kotlin/io/enact/trigger/rest/RestTriggerHandlerTest.kt
+  s_6bf983b64d3c58::t_15fd708bbbfca8 19
+enact-starter/src/main/kotlin/io/enact/autoconfigure/configuration/DefinitionLoaderConfiguration.kt
+  s_6bf983b64d3c58::t_a58ed6ce979ce4 44-47
+enact-demo/requests.http
+  s_6bf983b64d3c58::t_29764d6e49f6e1 25
+  s_6bf983b64d3c58::t_dd75ca3b8d783d 38
+enact-demo/src/main/kotlin/io/enact/demo/filter/DemoFilters.kt
+  s_6bf983b64d3c58::t_dd75ca3b8d783d 1-42
+docs/http-trigger.md
+  s_6bf983b64d3c58::t_d2a21792c1e5bd 115,178-253
+  s_6bf983b64d3c58::t_2567153cef077f 254
+enact-starter-web/src/test/kotlin/io/enact/trigger/rest/RestInputBinderTest.kt
+  s_6bf983b64d3c58::t_07078c899d552b 34-38
+  s_6bf983b64d3c58::t_5f9aead54ceb46 33
+enact-starter-web/src/main/kotlin/io/enact/trigger/rest/RestInputBinder.kt
+  s_6bf983b64d3c58::t_249bb39b96a96f 46-48
+  s_6bf983b64d3c58::t_ef46ac893ace0a 159,200-205,213,224
+enact-demo/src/main/kotlin/io/enact/demo/order/transfer/UpdateOrderCommand.kt
+  s_6bf983b64d3c58::t_29764d6e49f6e1 5
+enact-core/src/main/kotlin/io/enact/core/trigger/TriggerDefinition.kt
+  s_6bf983b64d3c58::t_a58ed6ce979ce4 19-20,23-24
+enact-starter-web/src/main/kotlin/io/enact/trigger/rest/RestTriggerHandler.kt
+  s_6bf983b64d3c58::t_ef46ac893ace0a 3,8-9,13,25-26,38,54-73,83-87,110
+CLAUDE.md
+  s_6bf983b64d3c58::t_63dce89ea594fa 30-31
+  s_6bf983b64d3c58::t_d2a21792c1e5bd 27-29,35,42,44,65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "1fa59803742eb7c3930e57c625e74020620336c8",
+  "prompts": {},
+  "sessions": {
+    "s_6bf983b64d3c58": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0b0fc9a5-2c01-402a-ab90-e6a159977e2f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Vladlen Gladis <17303517+gvart@users.noreply.github.com>"
+    }
+  }
+}
