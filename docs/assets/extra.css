@@ -1,0 +1,113 @@
+/* Brand colors sampled from the Enact logo */
+:root {
+  --enact-green: #22422b;
+  --enact-green-light: #2f6b43;
+  --enact-green-bright: #5fbf7f;
+}
+
+[data-md-color-primary="custom"] {
+  --md-primary-fg-color: var(--enact-green);
+  --md-primary-fg-color--light: var(--enact-green-light);
+  --md-primary-fg-color--dark: #172e1e;
+  --md-primary-bg-color: #ffffff;
+  --md-primary-bg-color--light: #ffffffb3;
+}
+
+[data-md-color-accent="custom"] {
+  --md-accent-fg-color: var(--enact-green-light);
+  --md-accent-fg-color--transparent: #2f6b431a;
+}
+
+[data-md-color-scheme="default"] {
+  --md-typeset-a-color: var(--enact-green-light);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-hue: 140;
+  --md-default-bg-color: #121a15;
+  --md-typeset-a-color: var(--enact-green-bright);
+  --md-accent-fg-color: var(--enact-green-bright);
+  --md-accent-fg-color--transparent: #5fbf7f1a;
+}
+
+[data-md-color-scheme="slate"] .md-header,
+[data-md-color-scheme="slate"] .md-tabs {
+  background-color: #182a1e;
+}
+
+/* Header logo is a green tile: round it so it sits nicely in the bar */
+.md-header__button.md-logo img {
+  border-radius: 6px;
+}
+
+/* Code blocks */
+.md-typeset pre > code,
+.md-typeset .highlight {
+  border-radius: 8px;
+}
+
+/* Landing page hero */
+.enact-hero {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  margin: 1rem 0 2.5rem;
+}
+
+.enact-hero img {
+  width: 12rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 12px 32px #22422b40;
+  flex-shrink: 0;
+}
+
+.enact-hero h1 {
+  margin: 0 0 0.5rem;
+  font-weight: 800;
+  color: var(--md-typeset-color);
+}
+
+.enact-hero p {
+  font-size: 1.1rem;
+  margin: 0 0 1.25rem;
+}
+
+.enact-hero .md-button {
+  margin: 0 0.5rem 0.5rem 0;
+}
+
+@media screen and (max-width: 44.9375em) {
+  .enact-hero {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+
+  .enact-hero img {
+    width: 8rem;
+  }
+}
+
+/* Feature cards */
+.md-typeset .grid.cards > ul > li {
+  border-radius: 10px;
+  transition: border-color 125ms, box-shadow 125ms, transform 125ms;
+}
+
+.md-typeset .grid.cards > ul > li:hover {
+  border-color: var(--md-accent-fg-color);
+  transform: translateY(-2px);
+}
+
+.md-typeset .grid.cards .twemoji {
+  color: var(--md-accent-fg-color);
+}
+
+/* Footer in brand tones */
+.md-footer {
+  background-color: #172e1e;
+}
+
+.md-footer-meta {
+  background-color: #102015;
+}

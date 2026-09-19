@@ -17,6 +17,17 @@ steps:
 
 When both are set, the cache is checked first. A cache hit skips the step and its retries.
 
+```mermaid
+flowchart LR
+    input([input]) --> hit{cache hit?}
+    hit -- yes --> out([cached output])
+    hit -- no --> step[run step]
+    step -- fails --> retry{retries left?}
+    retry -- yes --> step
+    retry -- no --> err([exception])
+    step -- succeeds --> store[store in cache] --> result([output])
+```
+
 ## Retry
 
 Retry uses Spring Framework's core retry support (`RetryTemplate`).
@@ -36,10 +47,19 @@ When all retries fail, the last exception thrown by the step reaches the caller 
 
 Retry can also be declared on the step itself. YAML settings take precedence:
 
-```kotlin
-@Step(retry = Retryable(maxRetries = 2, delay = 100))
-fun saveOrder(request: OrderRequest): OrderEntity { /* ... */ }
-```
+=== "Kotlin"
+
+    ```kotlin
+    @Step(retry = Retryable(maxRetries = 2, delay = 100))
+    fun saveOrder(request: OrderRequest): OrderEntity { /* ... */ }
+    ```
+
+=== "Java"
+
+    ```java
+    @Step(retry = @Retryable(maxRetries = 2, delay = 100))
+    public OrderEntity saveOrder(OrderRequest request) { /* ... */ }
+    ```
 
 ## Cache
 
