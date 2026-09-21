@@ -3,6 +3,7 @@ kotlin = "2.3.0"
 springBoot = "4.0.4"
 springFramework = "7.0.6"
 jackson = "3.1.0"
+micrometer = "1.16.4"
 junit = "6.0.3"
 junitPlatform = "1.12.2"
 spotless = "7.0.2"
@@ -20,11 +21,17 @@ springWeb = { module = "org.springframework:spring-web", version.ref = "springFr
 springBootAutoconfigure = { module = "org.springframework.boot:spring-boot-autoconfigure", version.ref = "springBoot" }
 springBootStarterWeb = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "springBoot" }
 springBootConfigurationProcessor = { module = "org.springframework.boot:spring-boot-configuration-processor", version.ref = "springBoot" }
+springBootStarterActuator = { module = "org.springframework.boot:spring-boot-starter-actuator", version.ref = "springBoot" }
 springBootStarterCache = { module = "org.springframework.boot:spring-boot-starter-cache", version.ref = "springBoot" }
 springBootStarterWebmvcTest = { module = "org.springframework.boot:spring-boot-starter-webmvc-test", version.ref = "springBoot" }
 springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "springBoot" }
 
 springTest = { module = "org.springframework:spring-test", version.ref = "springFramework" }
+
+# Micrometer
+micrometerObservation = { module = "io.micrometer:micrometer-observation", version.ref = "micrometer" }
+micrometerObservationTest = { module = "io.micrometer:micrometer-observation-test", version.ref = "micrometer" }
+micrometerCore = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
 
 # JUnit
 junitJupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }

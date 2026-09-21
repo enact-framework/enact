@@ -93,4 +93,5 @@ nav:
       - Retry and cache: step-settings.md
       - HTTP trigger: http-trigger.md
       - Custom trigger: custom-trigger.md
+      - Observability: observability.md
   - Roadmap: roadmap.md

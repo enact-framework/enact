@@ -10,13 +10,13 @@
 * define the license
 * step settings: retry + cache (cache storage key).
 * HTTP entrypoint
+* Metrics and traces (Micrometer observations)
 
 ## V1
 * Allow multiple definitions files 
 * Allow custom location
 * Registered keywords like `side` (to run a task aside), `fork` + `join`, `cache`
 * New entrypoint types
-* Spring boot metrics
 * Actuator endpoint
 * SQS Entrypoint
 * Kafka entrypoint
