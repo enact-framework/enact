@@ -73,8 +73,6 @@ class StepDiscoveryBeanPostProcessor(
                 StepSettings(retry = toRetrySpec(annotation.retry), cache = toCacheSpec(annotation.cache)),
                 bean,
                 method,
-                extractInputType(method),
-                extractOutputType(method),
             )
 
         registrar.register(stepAdapter)
@@ -131,15 +129,6 @@ class StepDiscoveryBeanPostProcessor(
             .name
             .takeIf { it.isNotBlank() }
             ?: method.name
-
-    private fun extractInputType(method: Method) =
-        when (method.parameterCount) {
-            0 -> Unit::class.java
-            1 -> method.parameters[0].type
-            else -> throw IllegalArgumentException("Method ${method.name} must have 0 to 1 parameter")
-        }
-
-    private fun extractOutputType(method: Method) = if (method.returnType == Void.TYPE) Unit::class.java else method.returnType
 
     private fun parseLong(
         value: Long,

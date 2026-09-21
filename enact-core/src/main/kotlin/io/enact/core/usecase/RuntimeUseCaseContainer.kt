@@ -36,8 +36,8 @@ class RuntimeUseCaseContainer<Input, Output>(
 
         validateStepChain()
 
-        inputType = resolveTypes(steps.first(), Step::class).inputType
-        outputType = resolveTypes(steps.last(), Step::class).outputType
+        inputType = resolveTypes(steps.first()).inputType.toClass()
+        outputType = resolveTypes(steps.last()).outputType.toClass()
 
         @Suppress("UNCHECKED_CAST")
         invokers =

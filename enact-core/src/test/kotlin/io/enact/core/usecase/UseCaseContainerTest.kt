@@ -108,6 +108,28 @@ class UseCaseContainerTest {
         }
     }
 
+    @Test
+    fun `should fail when steps agree on the raw type but not on its generics`() {
+        assertThrows<IllegalArgumentException> {
+            RuntimeUseCaseContainer<Unit, Int>(
+                name = "test",
+                description = "test",
+                steps = listOf(listOfStringOutStep(), listOfLongToInt()),
+            )
+        }.also {
+            assert(it.message!!.contains("java.lang.String")) { "Expected the generic in the message: ${it.message}" }
+        }
+    }
+
+    @Test
+    fun `should succeed when a step produces a subtype of the next step's input`() {
+        RuntimeUseCaseContainer<Unit, Int>(
+            name = "test",
+            description = "test",
+            steps = listOf(arrayListOfLongOutStep(), listOfLongToInt()),
+        )
+    }
+
     // -- InOutStep fixtures --
 
     private fun stringToInt() =
@@ -176,5 +198,31 @@ class UseCaseContainerTest {
             override var settings: StepSettings? = null
 
             override fun execute(input: Unit): Long = 0L
+        }
+
+    // -- generic fixtures --
+
+    private fun listOfStringOutStep() =
+        object : Step.Out<List<String>> {
+            override val name = "list-of-string-out-step"
+            override var settings: StepSettings? = null
+
+            override fun execute(input: Unit): List<String> = emptyList()
+        }
+
+    private fun arrayListOfLongOutStep() =
+        object : Step.Out<ArrayList<Long>> {
+            override val name = "array-list-of-long-out-step"
+            override var settings: StepSettings? = null
+
+            override fun execute(input: Unit): ArrayList<Long> = ArrayList()
+        }
+
+    private fun listOfLongToInt() =
+        object : Step.InOut<List<Long>, Int> {
+            override val name = "list-of-long-to-int"
+            override var settings: StepSettings? = null
+
+            override fun execute(input: List<Long>): Int = input.size
         }
 }

@@ -15,8 +15,6 @@ class MethodStepAdapterTest {
                 settings = null,
                 targetObject = target,
                 method = method,
-                inputClass = String::class.java,
-                outputClass = String::class.java,
             )
 
         val result = adapter.execute("hello")
@@ -35,8 +33,6 @@ class MethodStepAdapterTest {
                 settings = null,
                 targetObject = target,
                 method = method,
-                inputClass = Unit::class.java,
-                outputClass = String::class.java,
             )
 
         val result = adapter.execute(Unit)

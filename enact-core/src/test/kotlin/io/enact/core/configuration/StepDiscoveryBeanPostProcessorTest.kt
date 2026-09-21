@@ -53,8 +53,8 @@ class StepDiscoveryBeanPostProcessorTest {
     @Test
     fun `should handle method with no parameters as Unit input`() {
         val step = stepRegistrar.getStep("generate") as MethodAdapter
-        assert(step.inputClass == Unit::class.java)
-        assert(step.outputClass == String::class.java)
+        assert(step.inputType.toClass() == Unit::class.java)
+        assert(step.outputType.toClass() == String::class.java)
     }
 
     @Test
@@ -67,42 +67,42 @@ class StepDiscoveryBeanPostProcessorTest {
     @Test
     fun `should resolve typed method for Java Function and not bridge method`() {
         val step = stepRegistrar.getStep("transform") as MethodAdapter
-        assert(step.inputClass == String::class.java) { "Expected String but got ${step.inputClass}" }
-        assert(step.outputClass == String::class.java) { "Expected String but got ${step.outputClass}" }
+        assert(step.inputType.toClass() == String::class.java) { "Expected String but got ${step.inputType.toClass()}" }
+        assert(step.outputType.toClass() == String::class.java) { "Expected String but got ${step.outputType.toClass()}" }
     }
 
     @Test
     fun `should resolve typed method for Predicate and not bridge method`() {
         val step = stepRegistrar.getStep("check") as MethodAdapter
-        assert(step.inputClass == String::class.java) { "Expected String but got ${step.inputClass}" }
-        assert(step.outputClass == Boolean::class.java) { "Expected Boolean but got ${step.outputClass}" }
+        assert(step.inputType.toClass() == String::class.java) { "Expected String but got ${step.inputType.toClass()}" }
+        assert(step.outputType.toClass() == Boolean::class.java) { "Expected Boolean but got ${step.outputType.toClass()}" }
     }
 
     @Test
     fun `should resolve typed method for Consumer and not bridge method`() {
         val step = stepRegistrar.getStep("consume") as MethodAdapter
-        assert(step.inputClass == String::class.java) { "Expected String but got ${step.inputClass}" }
+        assert(step.inputType.toClass() == String::class.java) { "Expected String but got ${step.inputType.toClass()}" }
     }
 
     @Test
     fun `should resolve typed method for Supplier and not bridge method`() {
         val step = stepRegistrar.getStep("supply") as MethodAdapter
-        assert(step.inputClass == Unit::class.java) { "Expected Unit but got ${step.inputClass}" }
-        assert(step.outputClass == String::class.java) { "Expected String but got ${step.outputClass}" }
+        assert(step.inputType.toClass() == Unit::class.java) { "Expected Unit but got ${step.inputType.toClass()}" }
+        assert(step.outputType.toClass() == String::class.java) { "Expected String but got ${step.outputType.toClass()}" }
     }
 
     @Test
     fun `should resolve typed method for Kotlin Function1 and not bridge method`() {
         val step = stepRegistrar.getStep("kotlin-transform") as MethodAdapter
-        assert(step.inputClass == String::class.java) { "Expected String but got ${step.inputClass}" }
-        assert(step.outputClass == String::class.java) { "Expected String but got ${step.outputClass}" }
+        assert(step.inputType.toClass() == String::class.java) { "Expected String but got ${step.inputType.toClass()}" }
+        assert(step.outputType.toClass() == String::class.java) { "Expected String but got ${step.outputType.toClass()}" }
     }
 
     @Test
     fun `should resolve typed method for Kotlin Function0 and not bridge method`() {
         val step = stepRegistrar.getStep("kotlin-supply") as MethodAdapter
-        assert(step.inputClass == Unit::class.java) { "Expected Unit but got ${step.inputClass}" }
-        assert(step.outputClass == String::class.java) { "Expected String but got ${step.outputClass}" }
+        assert(step.inputType.toClass() == Unit::class.java) { "Expected Unit but got ${step.inputType.toClass()}" }
+        assert(step.outputType.toClass() == String::class.java) { "Expected String but got ${step.outputType.toClass()}" }
     }
 
     @Test

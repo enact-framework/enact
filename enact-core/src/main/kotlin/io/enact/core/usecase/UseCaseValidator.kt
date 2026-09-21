@@ -2,39 +2,44 @@ package io.enact.core.usecase
 
 import io.enact.core.step.MethodAdapter
 import io.enact.core.step.Step
-import org.springframework.core.GenericTypeResolver
-import kotlin.reflect.KClass
+import org.springframework.core.ResolvableType
 
+/**
+ * Checks that every step of the chain can be fed the value the previous one produces.
+ *
+ * The check is assignability, not equality, so a step declaring a wider input than what reaches it is fine:
+ * `ArrayList<Order>` feeds a step taking `List<Order>`, and an `int` feeds a step taking `Integer`. Generics
+ * take part in the comparison, so `List<Order>` does not feed a step taking `List<String>`.
+ */
 fun <Input, Output> UseCase<Input, Output>.validateStepChain() {
     steps.zipWithNext { current, next ->
-        val (_, currentOutput) = resolveTypes(current, Step::class)
-        val (nextInput) = resolveTypes(next, Step::class)
+        val produced = resolveTypes(current).outputType
+        val expected = resolveTypes(next).inputType
 
-        require(currentOutput == nextInput) {
+        require(expected.isAssignableFrom(produced)) {
             """
             Step "${current.name}" output type mismatch with followup step "${next.name}" input.
-            Expected: ${currentOutput.name}, actual: ${nextInput.name}.
+            Expected: $expected, actual: $produced.
             """.trimIndent()
         }
     }
 }
 
-internal fun resolveTypes(
-    instance: Any,
-    genericType: KClass<*>,
-): InOutTypes {
+internal fun resolveTypes(instance: Any): InOutTypes {
     if (instance is MethodAdapter) {
-        return InOutTypes(instance.inputClass, instance.outputClass)
+        return InOutTypes(instance.inputType, instance.outputType)
     }
 
-    val typeArgs =
-        GenericTypeResolver.resolveTypeArguments(instance.javaClass, genericType.java)
-            ?: error("Could not resolve generic types for ${instance.javaClass.simpleName}")
+    val stepType = ResolvableType.forClass(instance.javaClass).`as`(Step::class.java)
+    val types = InOutTypes(stepType.getGeneric(0), stepType.getGeneric(1))
 
-    return InOutTypes(typeArgs[0], typeArgs[1])
+    check(types.inputType.resolve() != null && types.outputType.resolve() != null) {
+        "Could not resolve generic types for ${instance.javaClass.simpleName}"
+    }
+    return types
 }
 
 internal data class InOutTypes(
-    val inputType: Class<*>,
-    val outputType: Class<*>,
+    val inputType: ResolvableType,
+    val outputType: ResolvableType,
 )
