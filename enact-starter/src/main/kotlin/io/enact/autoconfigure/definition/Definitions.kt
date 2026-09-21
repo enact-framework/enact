@@ -48,6 +48,11 @@ data class UseCaseDefinition(
     val observability: ObservabilitySpec? = null,
     /** Step whose output the use case returns; inferred when not set as the only one nothing reads. */
     val output: String? = null,
+    /**
+     * Whether steps that do not read each other run at once. Off by default: a step moved off the caller's
+     * thread leaves any surrounding transaction, `SecurityContext` and MDC behind.
+     */
+    val concurrent: Boolean = false,
     /** Steps in declaration order; each may only bind to one declared before it. */
     val steps: List<StepReference> = emptyList(),
 )

@@ -32,6 +32,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.core.env.Environment
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.util.ClassUtils
 import java.util.function.Supplier
 import io.enact.core.annotation.Step as StepAnnotation
@@ -177,6 +178,8 @@ open class DefinitionLoaderConfiguration :
             beanFactory.getBeanProvider<CacheManager>().ifAvailable,
             definition.group,
             observations(observed),
+            definition.concurrent,
+            beanFactory.getBeanProvider<AsyncTaskExecutor>().ifAvailable,
         )
     }
 

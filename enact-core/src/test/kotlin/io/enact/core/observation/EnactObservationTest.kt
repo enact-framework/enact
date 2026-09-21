@@ -3,6 +3,7 @@ package io.enact.core.observation
 import io.enact.core.cache.CacheSpec
 import io.enact.core.step.Step
 import io.enact.core.step.StepSettings
+import io.enact.core.usecase.Binding
 import io.enact.core.usecase.RuntimeUseCaseContainer
 import io.enact.core.usecase.StepNode
 import io.enact.core.usecase.nodes
@@ -123,6 +124,29 @@ class EnactObservationTest {
 
         Assertions.assertThat(useCase.execute("ann")).isEqualTo("ANN!")
         assertThat(registry).doesNotHaveAnyObservation()
+    }
+
+    @Test
+    fun `should nest step observations under the use case when steps run at once`() {
+        val useCase =
+            RuntimeUseCaseContainer<String, String>(
+                name = "greet",
+                description = "greets",
+                nodes =
+                    listOf(
+                        StepNode("upperCase", upperCase(), bindings = mapOf("input" to Binding.Input)),
+                        StepNode("exclaim", exclaim(), bindings = mapOf("input" to Binding.Input)),
+                    ),
+                output = "upperCase",
+                observations = EnactObservations(registry),
+                concurrent = true,
+            )
+
+        useCase.execute("ann")
+
+        val steps = handledContexts().filter { it.name == "enact.step" }
+        Assertions.assertThat(steps).hasSize(2)
+        Assertions.assertThat(steps).allMatch { it.parentObservation != null }
     }
 
     private fun handledContexts(): List<Observation.Context> {
