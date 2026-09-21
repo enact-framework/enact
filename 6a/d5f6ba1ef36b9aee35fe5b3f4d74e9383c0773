@@ -1,0 +1,137 @@
+enact-starter-web/src/test/kotlin/io/enact/trigger/rest/RestTriggerHandlerTest.kt
+  s_1aba6d09e5fee6::t_a7e546ba4eca2c 21-51
+docs/getting-started.md
+  s_1aba6d09e5fee6::t_9a999a1cb18467 117-120,122-131,137
+  s_1aba6d09e5fee6::t_8362edcddfca5a 121
+  s_1aba6d09e5fee6::t_79fe0f43655056 138
+enact-starter-web/src/test/kotlin/io/enact/trigger/rest/RestTriggerFiltersTest.kt
+  s_1aba6d09e5fee6::t_a7e546ba4eca2c 28-42,111-113
+  s_1aba6d09e5fee6::t_f9a3341ceecfc4 85
+docs/definition-files.md
+  s_1aba6d09e5fee6::t_f5364ddabfb324 1-6,9-20,23-34,37-67,69-72,74-87,89-94,97-98,103-105
+  s_1aba6d09e5fee6::t_a381720c3263d8 68
+  s_1aba6d09e5fee6::t_8362edcddfca5a 73
+  s_1aba6d09e5fee6::t_af7f9666704a32 99-102
+  s_1aba6d09e5fee6::t_053fc9fa90df86 7-8,21-22,35-36,95-96,106-122
+  s_1aba6d09e5fee6::t_60682cf92e0bba 88
+enact-starter/src/test/resources/enact/greeting.yaml
+  s_1aba6d09e5fee6::t_dfb0c76ce30530 1,3-5
+  s_1aba6d09e5fee6::t_f2f54b3a1e504e 2
+enact-starter/src/main/kotlin/io/enact/autoconfigure/TriggerActivator.kt
+  s_1aba6d09e5fee6::t_6fef3e7de77927 11,14,23,36-39,41,54-63,66,69,77-79,81,84-89
+  s_1aba6d09e5fee6::t_f8ca24c1367b3e 47
+docs/http-trigger.md
+  s_1aba6d09e5fee6::t_8362edcddfca5a 6,66,194,198,208
+enact-starter/src/test/kotlin/io/enact/autoconfigure/EnactAutoConfigurationTest.kt
+  s_1aba6d09e5fee6::t_a7e546ba4eca2c 28,40-41,53-55,69-71,86-89,102,116-118,133-134,150-151,167-168,186-189,205,221,237-239,256-257,273-274,286-289
+enact-starter/src/main/kotlin/io/enact/autoconfigure/configuration/DefinitionLoaderConfiguration.kt
+  s_1aba6d09e5fee6::t_6e2ff6969cbff8 47
+enact-starter/src/test/resources/definitions/multi-document.yaml
+  s_1aba6d09e5fee6::t_f2f54b3a1e504e 2,7
+  s_1aba6d09e5fee6::t_dfb0c76ce30530 1,3-6,8-9
+docs/observability.md
+  s_1aba6d09e5fee6::t_8362edcddfca5a 91,96
+enact-demo/src/main/resources/enact/system.yaml
+  s_1aba6d09e5fee6::t_f23fc93a96a3b5 2
+  s_1aba6d09e5fee6::t_7a68962919b0aa 1,3-16
+enact-starter/src/test/kotlin/io/enact/autoconfigure/TriggerActivatorTest.kt
+  s_1aba6d09e5fee6::t_7763feb0014107 20-22,40,54,66,91
+  s_1aba6d09e5fee6::t_a7e546ba4eca2c 67-68,105-106,122
+enact-starter/src/main/resources/META-INF/spring.factories
+  s_1aba6d09e5fee6::t_eb458407102c60 1-2
+enact-starter/src/test/kotlin/io/enact/autoconfigure/definition/DefinitionFileLoaderTest.kt
+  s_1aba6d09e5fee6::t_1bb33926702e77 81-87
+  s_1aba6d09e5fee6::t_baead7a3db0966 1-5,7-17,20-22,24-25,27-32,35-44,46-48,50-52,54-55,58-63,65-70,74-76,91-97,99-141,153-179,181-189
+  s_1aba6d09e5fee6::t_cbed222b8743bf 6,71-72,78-79,88-90,98
+  s_1aba6d09e5fee6::t_15a6164793fe36 142-145,147-152
+  s_1aba6d09e5fee6::t_b23c599de87e89 18-19,23,26,33-34,45,49,53,56-57,64,73,77,80,146,180
+docs/use-cases.md
+  s_1aba6d09e5fee6::t_8362edcddfca5a 8
+  s_1aba6d09e5fee6::t_9b0a164469e9b8 18-19
+  s_1aba6d09e5fee6::t_9a999a1cb18467 3-7,9-15,23-24
+  s_1aba6d09e5fee6::t_f9aa2785e7e919 25
+README.md
+  s_1aba6d09e5fee6::t_8362edcddfca5a 20
+  s_1aba6d09e5fee6::t_8cd43ec68a7c18 5,18-19,21-32
+enact-starter/src/test/resources/definitions/invalid/not-yaml.txt
+  s_1aba6d09e5fee6::t_dfb0c76ce30530 1
+enact-starter/src/main/kotlin/io/enact/autoconfigure/definition/DefinitionFileEnvironmentPostProcessor.kt
+  s_1aba6d09e5fee6::t_a3bf4b9ed50f87 1-6,8-12,15-22,25-28
+  s_1aba6d09e5fee6::t_3d0f52821dd97e 7,23
+  s_1aba6d09e5fee6::t_029ebc39ca2bc1 13-14,24
+enact-starter/src/test/resources/definitions/invalid/prefixed.yaml
+  s_1aba6d09e5fee6::t_f2f54b3a1e504e 3
+  s_1aba6d09e5fee6::t_dfb0c76ce30530 1-2,4-5
+enact-starter/src/test/resources/definitions/empty.yaml
+  s_1aba6d09e5fee6::t_dfb0c76ce30530 1
+enact-demo/src/main/resources/application.yaml
+  s_1aba6d09e5fee6::t_7a68962919b0aa 21
+enact-starter/src/test/resources/definitions/invalid/duplicate.yaml
+  s_1aba6d09e5fee6::t_dfb0c76ce30530 1,3-4
+  s_1aba6d09e5fee6::t_f2f54b3a1e504e 2
+docs/roadmap.md
+  s_1aba6d09e5fee6::t_8cd43ec68a7c18 14
+docs/custom-trigger.md
+  s_1aba6d09e5fee6::t_af7f9666704a32 191-192,194-199
+  s_1aba6d09e5fee6::t_99f32a98595b14 151-152,158-161
+  s_1aba6d09e5fee6::t_8362edcddfca5a 193
+enact-starter/src/main/kotlin/io/enact/autoconfigure/definition/DefinitionFileLoader.kt
+  s_1aba6d09e5fee6::t_da7360ff1c3c6b 117,120
+  s_1aba6d09e5fee6::t_5b954c4b0e8ee7 44
+  s_1aba6d09e5fee6::t_9c2f9fa691c049 26,28-34,49-56,81,88-105,107-109,112-113,118-119,121-122,125-132,134,136-137,139,141-147,150-153,159,163
+  s_1aba6d09e5fee6::t_3d0f52821dd97e 3,45
+  s_1aba6d09e5fee6::t_6a963aa56d80e7 62-63,66-67
+  s_1aba6d09e5fee6::t_6f31ed869eafcc 124,133,135,138
+  s_1aba6d09e5fee6::t_094085ea39e51d 22
+  s_1aba6d09e5fee6::t_a5bf974b5354f8 80
+  s_1aba6d09e5fee6::t_ab5c3f4ea73f47 42
+  s_1aba6d09e5fee6::t_9caaa35b1454a7 86,110-111,148
+  s_1aba6d09e5fee6::t_f57302bb923915 1-2,4-21,23-25,27,35-41,43,46-48,57-61,64-65,68-79,82-85,87,106,114-116,123,140,149,154-158,160-162,164-167
+enact-starter/src/main/kotlin/io/enact/autoconfigure/properties/EnactProperties.kt
+  s_1aba6d09e5fee6::t_51b1394bcfe723 14-16,19-20
+  s_1aba6d09e5fee6::t_3d0f52821dd97e 17-18
+  s_1aba6d09e5fee6::t_0e5cac8ea34b81 21-22
+enact-starter/src/test/resources/definitions/domain/orders.yaml
+  s_1aba6d09e5fee6::t_718d0a8d8a35f3 4-10,15
+  s_1aba6d09e5fee6::t_dfb0c76ce30530 1,3,11-14,16
+  s_1aba6d09e5fee6::t_f2f54b3a1e504e 2
+enact-starter/src/test/resources/definitions/domain/users.yaml
+  s_1aba6d09e5fee6::t_dfb0c76ce30530 1,3-4,6-7
+  s_1aba6d09e5fee6::t_f2f54b3a1e504e 2,5
+enact-starter/src/test/kotlin/io/enact/autoconfigure/definition/DefinitionFileEnvironmentPostProcessorTest.kt
+  s_1aba6d09e5fee6::t_2bd457966917c1 1-40
+mkdocs.yml
+  s_1aba6d09e5fee6::t_9a999a1cb18467 93
+CLAUDE.md
+  s_1aba6d09e5fee6::t_4130228e146fd2 12,23-27,33-34,40
+  s_1aba6d09e5fee6::t_37ba0766b68955 88
+  s_1aba6d09e5fee6::t_9b0a164469e9b8 28-32,52
+  s_1aba6d09e5fee6::t_1caea8b88c1fc2 38
+enact-demo/src/main/resources/enact/orders.yaml
+  s_1aba6d09e5fee6::t_f23fc93a96a3b5 4,21,32,43,58
+  s_1aba6d09e5fee6::t_7a68962919b0aa 1-3,5-20,22-31,33-42,44-57,59-71
+enact-starter/src/test/resources/definitions/invalid/duplicate-group.yaml
+  s_1aba6d09e5fee6::t_dfb0c76ce30530 1-3
+docs/index.md
+  s_1aba6d09e5fee6::t_9a999a1cb18467 82-83,85-96
+  s_1aba6d09e5fee6::t_8362edcddfca5a 84
+enact-starter/src/test/kotlin/io/enact/autoconfigure/ObservabilityAutoConfigurationTest.kt
+  s_1aba6d09e5fee6::t_7763feb0014107 53,61,71-72,84
+  s_1aba6d09e5fee6::t_a7e546ba4eca2c 25,108
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "6ad5f6ba1ef36b9aee35fe5b3f4d74e9383c0773",
+  "prompts": {},
+  "sessions": {
+    "s_1aba6d09e5fee6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b8690fe7-fbec-484b-8ed9-ecfa2c80bb29",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Vladlen Gladis <17303517+gvart@users.noreply.github.com>"
+    }
+  }
+}
