@@ -5,8 +5,8 @@ import io.enact.core.observation.DefaultStepObservationConvention
 import io.enact.core.observation.EnactObservationDocumentation
 import io.enact.core.observation.EnactObservations
 import io.enact.core.observation.StepObservationContext
+import io.enact.core.step.MethodAdapter
 import io.enact.core.step.Step
-import io.enact.core.step.StepSettings
 import org.springframework.cache.Cache
 import org.springframework.cache.CacheManager
 import org.springframework.cache.interceptor.SimpleKey
@@ -25,53 +25,54 @@ import java.util.function.Supplier
  * use case waited for.
  */
 internal class StepInvoker(
-    private val step: Step<Any?, Any?>,
-    settings: StepSettings?,
+    private val node: ResolvedNode,
     cacheManager: CacheManager?,
     private val useCaseName: String,
     private val group: String,
     private val observations: EnactObservations,
 ) {
+    private val step = node.node.step
+    private val settings = node.node.settings
     private val retryTemplate = settings?.retry?.let { RetryTemplate(it.toRetryPolicy()) }
     private val cache: Cache? =
         settings?.cache?.let { spec ->
             requireNotNull(cacheManager) {
-                "Step '${step.name}' uses cache '${spec.name}' but no CacheManager bean is available."
+                "Step '${node.id}' uses cache '${spec.name}' but no CacheManager bean is available."
             }
             requireNotNull(cacheManager.getCache(spec.name)) {
-                "Step '${step.name}' uses cache '${spec.name}' which is not known to the CacheManager."
+                "Step '${node.id}' uses cache '${spec.name}' which is not known to the CacheManager."
             }
         }
     private val keyExpression: Expression? = settings?.cache?.key?.let { parser.parseExpression(it) }
 
-    fun invoke(input: Any?): Any? {
+    fun invoke(arguments: List<Any?>): Any? {
         val observation =
             EnactObservationDocumentation.STEP.observation(
                 observations.stepConvention,
                 DefaultStepObservationConvention,
-                { StepObservationContext(step.name, useCaseName, group) },
+                { StepObservationContext(node.name, useCaseName, group) },
                 observations.registry,
             )
         // Null while observability is off: the registry short-circuits before creating our context.
         val context = observation.context as? StepObservationContext
 
-        return observation.observe(Supplier { invokeStep(input, context) })
+        return observation.observe(Supplier { invokeStep(arguments, context) })
     }
 
     private fun invokeStep(
-        input: Any?,
+        arguments: List<Any?>,
         context: StepObservationContext?,
     ): Any? {
-        val cache = cache ?: return execute(input)
+        val cache = cache ?: return execute(arguments)
         var miss = false
         try {
             // Spring's cache stores null results itself (when the cache allows null values)
             @Suppress("UNCHECKED_CAST")
             return cache.get(
-                cacheKey(input),
+                cacheKey(arguments),
                 Callable {
                     miss = true
-                    execute(input)
+                    execute(arguments)
                 } as Callable<Any>,
             )
         } catch (e: Cache.ValueRetrievalException) {
@@ -81,24 +82,42 @@ internal class StepInvoker(
         }
     }
 
-    private fun execute(input: Any?): Any? =
+    private fun execute(arguments: List<Any?>): Any? =
         if (retryTemplate != null) {
-            retryTemplate.invoke(Supplier { step.execute(input) })
+            retryTemplate.invoke(Supplier { call(arguments) })
         } else {
-            step.execute(input)
+            call(arguments)
         }
 
-    private fun cacheKey(input: Any?): Any {
-        if (keyExpression == null) return input ?: SimpleKey.EMPTY
+    @Suppress("UNCHECKED_CAST")
+    private fun call(arguments: List<Any?>): Any? =
+        if (step is MethodAdapter) {
+            step.invoke(arguments)
+        } else {
+            (step as Step<Any?, Any?>).execute(arguments.singleOrNull() ?: Unit)
+        }
 
-        val context =
-            SimpleEvaluationContext
-                .forReadOnlyDataBinding()
-                .withInstanceMethods()
-                .build()
-                .apply { setVariable("input", input) }
-        return keyExpression.getValue(context) ?: SimpleKey.EMPTY
+    /** Without a key, a step taking one argument is keyed by it, and one taking several by all of them. */
+    private fun cacheKey(arguments: List<Any?>): Any {
+        if (keyExpression == null) {
+            return arguments.singleOrNull() ?: SimpleKey(*arguments.toTypedArray())
+        }
+        return keyExpression.getValue(evaluationContext(arguments)) ?: SimpleKey.EMPTY
     }
+
+    /**
+     * Each argument is readable by its parameter name, and `#input` names the only one of a step taking a
+     * single parameter, which is what a cache key declared on a step can rely on.
+     */
+    private fun evaluationContext(arguments: List<Any?>) =
+        SimpleEvaluationContext
+            .forReadOnlyDataBinding()
+            .withInstanceMethods()
+            .build()
+            .apply {
+                node.parameters.forEachIndexed { index, parameter -> setVariable(parameter.name, arguments[index]) }
+                arguments.singleOrNull()?.let { setVariable("input", it) }
+            }
 
     private companion object {
         val parser = SpelExpressionParser()

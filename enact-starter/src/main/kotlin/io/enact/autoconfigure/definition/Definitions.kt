@@ -1,5 +1,6 @@
 package io.enact.autoconfigure.definition
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import io.enact.core.step.StepSettings
 import tools.jackson.databind.JsonNode
 
@@ -45,13 +46,24 @@ data class UseCaseDefinition(
     val trigger: Map<String, JsonNode> = emptyMap(),
     /** Observability for this use case; unset inherits its group, then `enact.observability`. */
     val observability: ObservabilitySpec? = null,
-    /** Ordered list of steps to execute. */
+    /** Step whose output the use case returns; inferred when not set as the only one nothing reads. */
+    val output: String? = null,
+    /** Steps in declaration order; each may only bind to one declared before it. */
     val steps: List<StepReference> = emptyList(),
 )
 
 data class StepReference(
     /** Name of the step bean to execute. */
     val step: String,
+    /** Identifies the step within the use case; defaults to [step], so a step used twice needs one. */
+    val id: String? = null,
+    /**
+     * Where the step's inputs come from: `$input` for the use case's own input, `$<step id>` for another
+     * step's output. Either one reference for a step taking a single parameter, or one per parameter by
+     * name. Left out, a single parameter reads the step declared before it.
+     */
+    @param:JsonProperty("in")
+    val inputs: JsonNode? = null,
     /** Optional step settings (retry, cache). Values set here override those declared on the step. */
     val settings: StepSettings? = null,
 )

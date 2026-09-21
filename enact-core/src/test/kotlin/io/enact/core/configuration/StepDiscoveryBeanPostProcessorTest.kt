@@ -53,7 +53,7 @@ class StepDiscoveryBeanPostProcessorTest {
     @Test
     fun `should handle method with no parameters as Unit input`() {
         val step = stepRegistrar.getStep("generate") as MethodAdapter
-        assert(step.inputType.toClass() == Unit::class.java)
+        assert(step.parameters.isEmpty())
         assert(step.outputType.toClass() == String::class.java)
     }
 
@@ -67,52 +67,91 @@ class StepDiscoveryBeanPostProcessorTest {
     @Test
     fun `should resolve typed method for Java Function and not bridge method`() {
         val step = stepRegistrar.getStep("transform") as MethodAdapter
-        assert(step.inputType.toClass() == String::class.java) { "Expected String but got ${step.inputType.toClass()}" }
+        assert(
+            step.parameters
+                .single()
+                .type
+                .toClass() == String::class.java,
+        ) {
+            "Expected String but got ${step.parameters.single().type.toClass()}"
+        }
         assert(step.outputType.toClass() == String::class.java) { "Expected String but got ${step.outputType.toClass()}" }
     }
 
     @Test
     fun `should resolve typed method for Predicate and not bridge method`() {
         val step = stepRegistrar.getStep("check") as MethodAdapter
-        assert(step.inputType.toClass() == String::class.java) { "Expected String but got ${step.inputType.toClass()}" }
+        assert(
+            step.parameters
+                .single()
+                .type
+                .toClass() == String::class.java,
+        ) {
+            "Expected String but got ${step.parameters.single().type.toClass()}"
+        }
         assert(step.outputType.toClass() == Boolean::class.java) { "Expected Boolean but got ${step.outputType.toClass()}" }
     }
 
     @Test
     fun `should resolve typed method for Consumer and not bridge method`() {
         val step = stepRegistrar.getStep("consume") as MethodAdapter
-        assert(step.inputType.toClass() == String::class.java) { "Expected String but got ${step.inputType.toClass()}" }
+        assert(
+            step.parameters
+                .single()
+                .type
+                .toClass() == String::class.java,
+        ) {
+            "Expected String but got ${step.parameters.single().type.toClass()}"
+        }
     }
 
     @Test
     fun `should resolve typed method for Supplier and not bridge method`() {
         val step = stepRegistrar.getStep("supply") as MethodAdapter
-        assert(step.inputType.toClass() == Unit::class.java) { "Expected Unit but got ${step.inputType.toClass()}" }
+        assert(step.parameters.isEmpty()) { "Expected no parameter but got ${step.parameters}" }
         assert(step.outputType.toClass() == String::class.java) { "Expected String but got ${step.outputType.toClass()}" }
     }
 
     @Test
     fun `should resolve typed method for Kotlin Function1 and not bridge method`() {
         val step = stepRegistrar.getStep("kotlin-transform") as MethodAdapter
-        assert(step.inputType.toClass() == String::class.java) { "Expected String but got ${step.inputType.toClass()}" }
+        assert(
+            step.parameters
+                .single()
+                .type
+                .toClass() == String::class.java,
+        ) {
+            "Expected String but got ${step.parameters.single().type.toClass()}"
+        }
         assert(step.outputType.toClass() == String::class.java) { "Expected String but got ${step.outputType.toClass()}" }
     }
 
     @Test
     fun `should resolve typed method for Kotlin Function0 and not bridge method`() {
         val step = stepRegistrar.getStep("kotlin-supply") as MethodAdapter
-        assert(step.inputType.toClass() == Unit::class.java) { "Expected Unit but got ${step.inputType.toClass()}" }
+        assert(step.parameters.isEmpty()) { "Expected no parameter but got ${step.parameters}" }
         assert(step.outputType.toClass() == String::class.java) { "Expected String but got ${step.outputType.toClass()}" }
     }
 
     @Test
-    fun `should throw when @Step method has more than one parameter`() {
+    fun `should capture the parameters of a @Step method taking several`() {
         val registrar = StepRegistrar()
-        val processor = StepDiscoveryBeanPostProcessor(registrar)
+        StepDiscoveryBeanPostProcessor(registrar).postProcessAfterInitialization(SeveralParamsService(), "several")
 
-        assertThrows<IllegalArgumentException> {
-            processor.postProcessAfterInitialization(TooManyParamsService(), "tooMany")
-        }
+        val step = registrar.getStep("several") as MethodAdapter
+
+        assert(step.parameters.map { it.name } == listOf("a", "b")) { "Got ${step.parameters.map { it.name }}" }
+        assert(step.parameters.map { it.type.toClass() } == listOf(String::class.java, Int::class.java))
+    }
+
+    @Test
+    fun `should invoke a @Step method with one argument per parameter`() {
+        val registrar = StepRegistrar()
+        StepDiscoveryBeanPostProcessor(registrar).postProcessAfterInitialization(SeveralParamsService(), "several")
+
+        val step = registrar.getStep("several") as MethodAdapter
+
+        assert(step.invoke(listOf("x", 2)) == "x2")
     }
 
     @Configuration
@@ -176,12 +215,12 @@ class StepDiscoveryBeanPostProcessorTest {
         fun doSomething(): String = "nothing"
     }
 
-    class TooManyParamsService {
-        @StepAnnotation(name = "bad")
-        fun tooMany(
+    class SeveralParamsService {
+        @StepAnnotation(name = "several")
+        fun several(
             a: String,
             b: Int,
-        ): String = a
+        ): String = "$a$b"
     }
 
     @StepAnnotation(name = "transform")

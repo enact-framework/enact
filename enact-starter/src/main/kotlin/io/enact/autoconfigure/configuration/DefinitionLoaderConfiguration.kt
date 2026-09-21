@@ -3,6 +3,7 @@ package io.enact.autoconfigure.configuration
 import io.enact.autoconfigure.definition.DefinitionReader
 import io.enact.autoconfigure.definition.Definitions
 import io.enact.autoconfigure.definition.UseCaseDefinition
+import io.enact.autoconfigure.definition.bindings
 import io.enact.autoconfigure.properties.EnactProperties
 import io.enact.core.observation.EnactObservations
 import io.enact.core.observation.StepObservationConvention
@@ -10,6 +11,7 @@ import io.enact.core.observation.UseCaseObservationConvention
 import io.enact.core.step.Step
 import io.enact.core.step.StepRegistrar
 import io.enact.core.usecase.RuntimeUseCaseContainer
+import io.enact.core.usecase.StepNode
 import io.enact.core.usecase.UseCase
 import io.micrometer.observation.ObservationRegistry
 import org.springframework.beans.factory.BeanFactory
@@ -151,14 +153,22 @@ open class DefinitionLoaderConfiguration :
         observed: Boolean,
     ): RuntimeUseCaseContainer<*, *> {
         val stepRegistrar = beanFactory.getBean<StepRegistrar>()
-        val steps = definition.steps.map { stepRegistrar.getStep(it.step) }
-        val stepSettings = definition.steps.zip(steps) { ref, step -> ref.settings?.orElse(step.settings) ?: step.settings }
+        val nodes =
+            definition.steps.map { reference ->
+                val step = stepRegistrar.getStep(reference.step)
+                StepNode(
+                    id = reference.id ?: reference.step,
+                    step = step,
+                    bindings = reference.bindings(name, step),
+                    settings = reference.settings?.orElse(step.settings) ?: step.settings,
+                )
+            }
 
         return RuntimeUseCaseContainer<Any, Any>(
             name,
             definition.description ?: "<no description>",
-            steps,
-            stepSettings,
+            nodes,
+            definition.output,
             beanFactory.getBeanProvider<CacheManager>().ifAvailable,
             definition.group,
             observations(observed),

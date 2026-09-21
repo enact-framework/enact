@@ -12,7 +12,7 @@ class UseCaseContainerTest {
             RuntimeUseCaseContainer<String, Int>(
                 name = "test",
                 description = "test",
-                steps = emptyList(),
+                nodes = emptyList(),
             )
         }.also {
             assert(it.message == "Must specify at least one step.")
@@ -24,7 +24,7 @@ class UseCaseContainerTest {
         RuntimeUseCaseContainer<String, Int>(
             name = "test",
             description = "test",
-            steps = listOf(stringToInt()),
+            nodes = nodes(stringToInt()),
         )
     }
 
@@ -33,7 +33,7 @@ class UseCaseContainerTest {
         RuntimeUseCaseContainer<String, Int>(
             name = "test",
             description = "test",
-            steps = listOf(stringToLong(), longToInt()),
+            nodes = nodes(stringToLong(), longToInt()),
         )
     }
 
@@ -43,7 +43,7 @@ class UseCaseContainerTest {
             RuntimeUseCaseContainer<String, String>(
                 name = "test",
                 description = "test",
-                steps = listOf(stringToLong(), intToString()),
+                nodes = nodes(stringToLong(), intToString()),
             )
         }
     }
@@ -54,7 +54,7 @@ class UseCaseContainerTest {
             RuntimeUseCaseContainer<String, Int>(
                 name = "test",
                 description = "test",
-                steps = listOf(stringToLong(), stringToInt()),
+                nodes = nodes(stringToLong(), stringToInt()),
             )
         }
     }
@@ -64,7 +64,7 @@ class UseCaseContainerTest {
         RuntimeUseCaseContainer<String, Unit>(
             name = "test",
             description = "test",
-            steps = listOf(stringToLong(), longInStep()),
+            nodes = nodes(stringToLong(), longInStep()),
         )
     }
 
@@ -73,7 +73,7 @@ class UseCaseContainerTest {
         RuntimeUseCaseContainer<Unit, Int>(
             name = "test",
             description = "test",
-            steps = listOf(longOutStep(), longToInt()),
+            nodes = nodes(longOutStep(), longToInt()),
         )
     }
 
@@ -82,7 +82,7 @@ class UseCaseContainerTest {
         RuntimeUseCaseContainer<Unit, Unit>(
             name = "test",
             description = "test",
-            steps = listOf(stringOutStep(), stringToLong(), longInStep()),
+            nodes = nodes(stringOutStep(), stringToLong(), longInStep()),
         )
     }
 
@@ -92,7 +92,7 @@ class UseCaseContainerTest {
             RuntimeUseCaseContainer<Unit, Int>(
                 name = "test",
                 description = "test",
-                steps = listOf(stringOutStep(), longToInt()),
+                nodes = nodes(stringOutStep(), longToInt()),
             )
         }
     }
@@ -103,7 +103,7 @@ class UseCaseContainerTest {
             RuntimeUseCaseContainer<String, Unit>(
                 name = "test",
                 description = "test",
-                steps = listOf(stringToLong(), stringInStep()),
+                nodes = nodes(stringToLong(), stringInStep()),
             )
         }
     }
@@ -114,7 +114,7 @@ class UseCaseContainerTest {
             RuntimeUseCaseContainer<Unit, Int>(
                 name = "test",
                 description = "test",
-                steps = listOf(listOfStringOutStep(), listOfLongToInt()),
+                nodes = nodes(listOfStringOutStep(), listOfLongToInt()),
             )
         }.also {
             assert(it.message!!.contains("java.lang.String")) { "Expected the generic in the message: ${it.message}" }
@@ -126,7 +126,7 @@ class UseCaseContainerTest {
         RuntimeUseCaseContainer<Unit, Int>(
             name = "test",
             description = "test",
-            steps = listOf(arrayListOfLongOutStep(), listOfLongToInt()),
+            nodes = nodes(arrayListOfLongOutStep(), listOfLongToInt()),
         )
     }
 

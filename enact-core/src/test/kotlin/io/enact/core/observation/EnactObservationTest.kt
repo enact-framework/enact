@@ -4,6 +4,8 @@ import io.enact.core.cache.CacheSpec
 import io.enact.core.step.Step
 import io.enact.core.step.StepSettings
 import io.enact.core.usecase.RuntimeUseCaseContainer
+import io.enact.core.usecase.StepNode
+import io.enact.core.usecase.nodes
 import io.micrometer.observation.Observation
 import io.micrometer.observation.tck.TestObservationRegistry
 import io.micrometer.observation.tck.TestObservationRegistryAssert.assertThat
@@ -116,7 +118,7 @@ class EnactObservationTest {
             RuntimeUseCaseContainer<String, String>(
                 name = "greet",
                 description = "greets",
-                steps = listOf(upperCase(), exclaim()),
+                nodes = nodes(upperCase(), exclaim()),
             )
 
         Assertions.assertThat(useCase.execute("ann")).isEqualTo("ANN!")
@@ -137,8 +139,7 @@ class EnactObservationTest {
     ) = RuntimeUseCaseContainer<String, String>(
         name = "greet",
         description = "greets",
-        steps = steps,
-        stepSettings = stepSettings,
+        nodes = steps.zip(stepSettings) { step, settings -> StepNode(step.name, step, settings = settings) },
         cacheManager = cacheManager,
         group = group,
         observations = EnactObservations(registry),
