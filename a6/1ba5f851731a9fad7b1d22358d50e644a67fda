@@ -1,0 +1,72 @@
+enact-starter/src/main/kotlin/io/enact/autoconfigure/TriggerActivator.kt
+  s_999d9db2249e43::t_3b0bca0ee7c4c6 3-5,13,18,20-21,24,30,33-34,37-38,43,55,57,59-61,66
+enact-starter-web/src/test/kotlin/io/enact/trigger/rest/RestTriggerFiltersTest.kt
+  s_999d9db2249e43::t_19c707922da7f3 198,213
+  s_999d9db2249e43::t_b51fd0bacc9aa2 174
+  s_999d9db2249e43::t_281c2f5a5f9a6e 15-16
+  s_999d9db2249e43::t_dc50cc75a60262 24
+  s_999d9db2249e43::t_c6992959909d2d 65-79,89-105
+  s_999d9db2249e43::t_0dfef349bcfd0c 169-173,175-197,199-212,214-219
+enact-demo/src/main/resources/enact/system.yaml
+  s_999d9db2249e43::t_a94788c378d445 12,14-16
+enact-starter/src/main/kotlin/io/enact/autoconfigure/properties/EnactProperties.kt
+  s_999d9db2249e43::t_6982a85db6b2a4 7-9,17
+enact-starter/src/test/kotlin/io/enact/autoconfigure/definition/DefinitionReaderTest.kt
+  s_999d9db2249e43::t_19c707922da7f3 75-107
+  s_999d9db2249e43::t_a24ef269c3c6ca 1-39,46-74,108-129,131-167
+  s_999d9db2249e43::t_240468f0f7ae7c 40-45
+  s_999d9db2249e43::t_3311cb396f3a89 130
+enact-starter/src/main/kotlin/io/enact/autoconfigure/configuration/DefinitionLoaderConfiguration.kt
+  s_999d9db2249e43::t_91ff9b696078a5 30
+  s_999d9db2249e43::t_3c7305441ed712 51-52
+  s_999d9db2249e43::t_1fb26673a46521 3-5,49,53-58,60-62,64,124-125,128,150,169
+enact-demo/src/main/kotlin/io/enact/demo/filter/DemoFilters.kt
+  s_999d9db2249e43::t_c303fd7dc2177c 10
+enact-starter/build.gradle.kts
+  s_999d9db2249e43::t_1710847a8816c7 12-13
+enact-starter/src/main/kotlin/io/enact/autoconfigure/definition/Definitions.kt
+  s_999d9db2249e43::t_a92c56ed9baad3 1-65
+enact-starter-web/src/test/kotlin/io/enact/trigger/rest/RestTriggerHandlerTest.kt
+  s_999d9db2249e43::t_4b4aedcacd403d 13-14
+  s_999d9db2249e43::t_b51fd0bacc9aa2 267
+  s_999d9db2249e43::t_40906193acd922 20
+  s_999d9db2249e43::t_bccd9d3d22877c 263-266,268-342
+enact-starter/src/main/kotlin/io/enact/autoconfigure/definition/DefinitionMapper.kt
+  s_999d9db2249e43::t_1c84831ac5e791 1-34
+enact-starter/src/main/kotlin/io/enact/autoconfigure/EnactAutoConfiguration.kt
+  s_999d9db2249e43::t_1710847a8816c7 4,27,30
+enact-starter/src/test/kotlin/io/enact/autoconfigure/DefinitionFiles.kt
+  s_999d9db2249e43::t_a418e76ab4fdfe 1-11,13-17
+  s_999d9db2249e43::t_dc799c1a0de92d 12
+enact-demo/src/main/resources/application.yaml
+  s_999d9db2249e43::t_a94788c378d445 20-21
+enact-starter/src/test/kotlin/io/enact/autoconfigure/EnactAutoConfigurationTest.kt
+  s_999d9db2249e43::t_b8c5b53e330dda 28-35,47-55,67-78,92-103,118-132,145-152,166-177,192-202,218-228,244-254,272-285,301-308,324-331,347-358,375-385,401-411,423-435
+enact-starter-web/src/test/kotlin/io/enact/trigger/rest/DefinitionFiles.kt
+  s_999d9db2249e43::t_1ac4799b714a67 1-20
+enact-starter/src/test/kotlin/io/enact/autoconfigure/ObservabilityAutoConfigurationTest.kt
+  s_999d9db2249e43::t_793a0eb2d5f8f7 27-38,40-45,50-63,70-82,90-104,111-125,136-148
+  s_999d9db2249e43::t_85c0b3bb77edbf 172-179
+enact-starter/src/main/kotlin/io/enact/autoconfigure/definition/DefinitionReader.kt
+  s_999d9db2249e43::t_2582a9394fcb89 1-27,31-39,41-43,45-48,50-66,75,77-120
+  s_999d9db2249e43::t_9e11e848bed143 67-74,76
+  s_999d9db2249e43::t_f2a5bb3ef681f7 28-30,40,44,49
+enact-starter/src/test/kotlin/io/enact/autoconfigure/TriggerActivatorTest.kt
+  s_999d9db2249e43::t_9cecc8fd541548 19-27,45-53,65-79,91-107,120,130-138,150-157,171-176,178
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "a61ba5f851731a9fad7b1d22358d50e644a67fda",
+  "prompts": {},
+  "sessions": {
+    "s_999d9db2249e43": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0a311664-cc03-4b56-81bc-be00dcccbb78",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Vladlen Gladis <17303517+gvart@users.noreply.github.com>"
+    }
+  }
+}
