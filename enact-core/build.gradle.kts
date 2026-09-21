@@ -7,7 +7,9 @@ description = "Core of Enact: steps, use cases, validation and execution."
 
 dependencies {
     api(libs.springContext)
+    api(libs.micrometerObservation)
 
     testImplementation(libs.junitJupiter)
     testImplementation(libs.springTest)
+    testImplementation(libs.micrometerObservationTest)
 }

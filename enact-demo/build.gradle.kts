@@ -7,6 +7,7 @@ plugins {
 dependencies {
     implementation(project(":enact-starter-web"))
     implementation(libs.springBootStarterCache)
+    implementation(libs.springBootStarterActuator)
 
     testImplementation(libs.springBootStarterTest)
 }

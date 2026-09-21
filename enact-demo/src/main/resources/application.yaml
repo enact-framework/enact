@@ -7,6 +7,16 @@ spring:
     problemdetails:
       enabled: true   # binding errors are answered as RFC 9457 problem details
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, metrics
+  metrics:
+    distribution:
+      percentiles:
+        enact.use.case: 0.95, 0.99   # p95 and p99 per use case, see docs/observability.md
+
 enact:
   # Use cases in a group are wrapped by its filters (HandlerFilterFunction beans, see DemoFilters)
   groups:
@@ -16,6 +26,8 @@ enact:
       filters: [requestLog, requireUser]
     public:                       # opts out of the default group
       filters: []
+      observability:
+        enabled: false            # nothing in this group is measured
 
   use-cases:
     - name: generateId

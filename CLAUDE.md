@@ -8,7 +8,7 @@ Enact follows a use-case-oriented approach: developers define steps as Spring be
 
 ## Architecture
 
-- **`enact-core`** — `@Step` annotation, `Step`/`UseCase` model, step discovery (`StepDiscoveryBeanPostProcessor`), validation, execution with retry/cache (`RuntimeUseCaseContainer`, `StepInvoker`), trigger SPI (`TriggerHandler`, `TriggerRegistration`)
+- **`enact-core`** — `@Step` annotation, `Step`/`UseCase` model, step discovery (`StepDiscoveryBeanPostProcessor`), validation, execution with retry/cache (`RuntimeUseCaseContainer`, `StepInvoker`), trigger SPI (`TriggerHandler`, `TriggerRegistration`), Micrometer observations (`io.enact.core.observation`)
 - **`enact-starter`** — Spring Boot auto-configuration: binds `enact.*` properties, registers use case beans (`DefinitionLoaderConfiguration`), generic-aware injection (`UseCaseAutowireCandidateResolver`), trigger activation
 - **`enact-starter-web`** — REST trigger (`RestTriggerHandler`) built on Spring MVC functional routes
 - **`enact-demo`** — runnable sample app (not published)
@@ -25,15 +25,21 @@ Enact follows a use-case-oriented approach: developers define steps as Spring be
 ```yaml
 enact:
   enabled: true
+  observability:
+    enabled: true                # optional; metrics and traces, on by default
   groups:                        # optional; filters shared by use cases of a group, resolved by the trigger
     default:                     # applies to use cases without `group`
       filters: [bearerAuth]      # bean names, outermost first (HandlerFilterFunction for the REST trigger)
     admin:
       filters: [bearerAuth, requireAdmin]
+      observability:
+        enabled: false           # optional; overrides the global setting for this group
   use-cases:
     - name: createOrder          # use case bean name
       description: ...
       group: admin               # optional; defaults to `default`
+      observability:
+        enabled: true            # optional; overrides the group, then the global setting
       trigger:                   # optional, exactly one type; without it the use case is injection-only
         rest:                    # trigger type: the handler claiming it binds the block below
           method: POST
@@ -65,6 +71,14 @@ enact:
 5. REST `bind` keys must be input properties, `path:` sources must exist in the path, and every path variable must bind to a property
 6. A use case `group` must be declared in `enact.groups`, and every filter name must be a bean of the kind the trigger expects (`HandlerFilterFunction` for REST)
 7. A use case declares at most one trigger, whose type must have a registered `TriggerHandler`
+
+## Observability
+
+`RuntimeUseCaseContainer` and `StepInvoker` record the `enact.use.case` and `enact.step` observations (metrics,
+plus spans when a tracer is present). Whether a use case is observed is decided at startup in
+`DefinitionLoaderConfiguration`: a use case that is turned off is built with `ObservationRegistry.NOOP`, so
+nothing is checked at execution time. Without Actuator there is no `ObservationRegistry` bean and nothing is
+recorded. See `docs/observability.md`.
 
 ## Triggers
 

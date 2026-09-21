@@ -1,14 +1,19 @@
 package io.enact.autoconfigure.configuration
 
 import io.enact.autoconfigure.properties.EnactProperties
+import io.enact.core.observation.EnactObservations
+import io.enact.core.observation.StepObservationConvention
+import io.enact.core.observation.UseCaseObservationConvention
 import io.enact.core.step.Step
 import io.enact.core.step.StepRegistrar
 import io.enact.core.usecase.RuntimeUseCaseContainer
 import io.enact.core.usecase.UseCase
+import io.micrometer.observation.ObservationRegistry
 import org.springframework.beans.factory.BeanFactory
 import org.springframework.beans.factory.BeanFactoryAware
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
 import org.springframework.beans.factory.getBean
+import org.springframework.beans.factory.getBeanProvider
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
@@ -45,6 +50,7 @@ open class DefinitionLoaderConfiguration :
             require(group == null || group in properties.groups) {
                 "Use case '$name' references unknown group '$group'. Known: ${properties.groups.keys}"
             }
+            val observed = observabilityEnabled(properties, useCaseDefinition)
             val beanDefinition =
                 RootBeanDefinition().apply {
                     setBeanClass(UseCase::class.java)
@@ -53,7 +59,7 @@ open class DefinitionLoaderConfiguration :
                     instanceSupplier =
                         Supplier<UseCase<*, *>> {
                             initializeStepBeans()
-                            createUseCase(name, useCaseDefinition)
+                            createUseCase(name, useCaseDefinition, observed)
                         }
                 }
 
@@ -101,9 +107,36 @@ open class DefinitionLoaderConfiguration :
             userClass.declaredMethods.any { AnnotationUtils.findAnnotation(it, StepAnnotation::class.java) != null }
     }
 
+    /** A use case falls back to its group, a group to `enact.observability`, which defaults to enabled. */
+    private fun observabilityEnabled(
+        properties: EnactProperties,
+        definition: EnactProperties.UseCaseDefinition,
+    ): Boolean =
+        definition.observability?.enabled
+            ?: properties.groups[definition.group ?: DEFAULT_GROUP]?.observability?.enabled
+            ?: properties.observability.enabled
+            ?: true
+
+    /**
+     * Observations go into the application's [ObservationRegistry], which Spring Boot publishes when Actuator
+     * is on the classpath. Without Actuator, or when observability is turned off, the use case gets
+     * [ObservationRegistry.NOOP] and records nothing.
+     */
+    private fun observations(enabled: Boolean): EnactObservations {
+        if (!enabled) return EnactObservations.NONE
+
+        val registry = beanFactory.getBeanProvider(ObservationRegistry::class.java).ifAvailable ?: return EnactObservations.NONE
+        return EnactObservations(
+            registry,
+            beanFactory.getBeanProvider<UseCaseObservationConvention>().ifAvailable,
+            beanFactory.getBeanProvider<StepObservationConvention>().ifAvailable,
+        )
+    }
+
     private fun createUseCase(
         name: String,
         definition: EnactProperties.UseCaseDefinition,
+        observed: Boolean,
     ): RuntimeUseCaseContainer<*, *> {
         val stepRegistrar = beanFactory.getBean<StepRegistrar>()
         val steps = definition.steps.map { stepRegistrar.getStep(it.step) }
@@ -114,7 +147,13 @@ open class DefinitionLoaderConfiguration :
             definition.description ?: "<no description>",
             steps,
             stepSettings,
-            beanFactory.getBeanProvider(CacheManager::class.java).ifAvailable,
+            beanFactory.getBeanProvider<CacheManager>().ifAvailable,
+            definition.group,
+            observations(observed),
         )
+    }
+
+    private companion object {
+        const val DEFAULT_GROUP = "default"
     }
 }

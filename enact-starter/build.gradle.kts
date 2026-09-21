@@ -12,4 +12,6 @@ dependencies {
     kapt(libs.springBootConfigurationProcessor)
 
     testImplementation(libs.springBootStarterTest)
+    testImplementation(libs.micrometerObservationTest)
+    testImplementation(libs.micrometerCore)
 }
