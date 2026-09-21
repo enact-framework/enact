@@ -47,6 +47,11 @@ data class StepNode(
      * stand in for the step's output. Needed only when something reads the step.
      */
     val fallback: Fallback? = null,
+    /**
+     * Whether the step runs aside: always off the caller's thread, never waited for and never read, so its
+     * failure can only be logged and recorded. Independent of a use case's `concurrent`.
+     */
+    val side: Boolean = false,
     /** Overrides the settings declared on the step itself. */
     val settings: StepSettings? = step.settings,
 )

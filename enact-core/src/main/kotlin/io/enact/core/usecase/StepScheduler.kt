@@ -1,6 +1,8 @@
 package io.enact.core.usecase
 
+import io.micrometer.context.ContextSnapshot
 import io.micrometer.context.ContextSnapshotFactory
+import org.apache.commons.logging.LogFactory
 import org.springframework.core.task.AsyncTaskExecutor
 import java.util.concurrent.Callable
 import java.util.concurrent.ExecutionException
@@ -11,34 +13,58 @@ import java.util.concurrent.Future
  *
  * A level holds the steps whose inputs are all ready, so they may run at once. Whether they actually do is
  * the use case's choice: a step moved off the caller's thread leaves any surrounding transaction,
- * `SecurityContext` and MDC behind, so running in sequence stays the default.
+ * `SecurityContext` and MDC behind, so running in sequence stays the default. A step declared to run aside
+ * is the exception, since not waiting for it is the whole point.
  */
 internal class StepScheduler(
-    graph: UseCaseGraph,
-    private val executor: AsyncTaskExecutor?,
+    private val useCase: String,
+    private val graph: UseCaseGraph,
+    private val executor: AsyncTaskExecutor,
+    private val concurrent: Boolean,
 ) {
     /** Indices into the graph's nodes, grouped by how deep they are in the graph. */
     private val levels: List<List<Int>> = levelsOf(graph)
 
     /**
      * Runs every step, publishing a level's results before the next one starts, since the next level reads
-     * them.
+     * them. Steps running aside are started and left to finish on their own.
      */
     fun run(
         step: (Int) -> Any?,
         publish: (Int, Any?) -> Unit,
-    ) = levels.forEach { level -> runLevel(level, step).forEach { (index, value) -> publish(index, value) } }
+    ) = levels.forEach { level ->
+        val snapshot = ContextSnapshotFactory.builder().build().captureAll()
+        val (aside, awaited) = level.partition { graph.nodes[it].node.side }
+
+        aside.forEach { index -> runAside(index, step, snapshot) }
+        runLevel(awaited, step, snapshot).forEach { (index, value) -> publish(index, value) }
+    }
+
+    /** Nothing reads this step and nobody waits for it, so a failure can only be logged; it is observed too. */
+    private fun runAside(
+        index: Int,
+        step: (Int) -> Any?,
+        snapshot: ContextSnapshot,
+    ) {
+        executor.submit {
+            try {
+                snapshot.setThreadLocals().use { step(index) }
+            } catch (throwable: Throwable) {
+                log.error("Step '${graph.nodes[index].id}' of use case '$useCase' runs aside and failed.", throwable)
+            }
+        }
+    }
 
     private fun runLevel(
         level: List<Int>,
         step: (Int) -> Any?,
+        snapshot: ContextSnapshot,
     ): List<Pair<Int, Any?>> {
-        if (executor == null || level.size == 1) {
+        if (!concurrent || level.size <= 1) {
             return level.map { it to step(it) }
         }
 
-        // Carries the observation scope, and whatever else registered a ThreadLocalAccessor, onto the workers.
-        val snapshot = ContextSnapshotFactory.builder().build().captureAll()
+        // The snapshot carries the observation scope, and whatever else registered a ThreadLocalAccessor.
         val futures: List<Future<Any?>> =
             level.map { index ->
                 executor.submit(Callable { snapshot.setThreadLocals().use { step(index) } })
@@ -67,6 +93,8 @@ internal class StepScheduler(
     }
 
     private companion object {
+        val log = LogFactory.getLog(StepScheduler::class.java)
+
         /** A step sits one level below the deepest step it reads, which declaration order already orders. */
         fun levelsOf(graph: UseCaseGraph): List<List<Int>> {
             val depths = HashMap<String, Int>(graph.nodes.size)

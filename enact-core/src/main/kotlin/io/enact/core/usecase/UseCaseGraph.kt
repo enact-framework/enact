@@ -54,11 +54,14 @@ internal fun buildGraph(
     }
 
     val resolved = byId.values.toList()
-    val consumed = resolved.flatMap { node -> node.sources.filterIsInstance<Binding.Output>().map { it.node } }.toSet()
+    val read = resolved.readSteps()
+    // Feeding a step that runs aside does not use a value up: nothing waits for it, so the step feeding it
+    // is still free to be what the use case returns.
+    val consumed = resolved.filterNot { it.node.side }.readSteps()
     val sink = sinkOf(useCase, resolved, consumed, output)
 
-    // A conditional step only needs something to yield when skipped if its value is read.
-    resolved.filter { it.node.condition != null && (it.id in consumed || it === sink) }.forEach {
+    // A conditional step only needs something to yield when skipped if its value is read, aside or not.
+    resolved.filter { it.node.condition != null && (it.id in read || it === sink) }.forEach {
         it.fallback = fallbackOf(useCase, it)
     }
 
@@ -116,6 +119,9 @@ private fun fallbackOf(
     }
 }
 
+private fun List<ResolvedNode>.readSteps(): Set<String> =
+    flatMap { node -> node.sources.filterIsInstance<Binding.Output>().map { it.node } }.toSet()
+
 private fun resolve(
     useCase: String,
     node: StepNode,
@@ -144,6 +150,10 @@ private fun resolve(
                     "$where binds '${parameters[position].name}' to '${source.node}', which is not a step " +
                         "declared before it. Known: ${declared.keys}."
                 }
+            require(!producer.node.side) {
+                "$where binds '${parameters[position].name}' to '${source.node}', which runs aside. " +
+                    "A step run aside is never waited for, so nothing can read what it produces."
+            }
             val expected = parameters[position].type
             require(expected.isAssignableFrom(producer.outputType)) {
                 "$where binds '${parameters[position].name}' to '${source.node}', which produces " +
@@ -209,11 +219,15 @@ private fun sinkOf(
         }
     }
 
-    val terminal = nodes.filterNot { it.id in consumed }
+    val terminal = nodes.filterNot { it.id in consumed || it.node.side }
 
+    require(terminal.isNotEmpty()) {
+        "Use case '$useCase' has no step to return: every step it declares either feeds another one or runs " +
+            "aside. Name the one to return with 'output'."
+    }
     require(terminal.size == 1) {
         "Use case '$useCase' has ${terminal.size} steps whose output nothing reads: ${terminal.map { it.id }}. " +
-            "Name the one to return with 'output'."
+            "Name the one to return with 'output', or mark one 'side: true'."
     }
     return terminal.single()
 }

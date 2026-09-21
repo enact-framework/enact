@@ -33,7 +33,7 @@ class RuntimeUseCaseContainer<Input, Output>(
     private val groupName = group ?: DEFAULT_GROUP
     private val graph = buildGraph(name, nodes, output)
     private val invokers: List<StepInvoker>
-    private val scheduler = StepScheduler(graph, if (concurrent) executor ?: virtualThreads() else null)
+    private val scheduler = StepScheduler(name, graph, executor ?: virtualThreads(), concurrent)
 
     init {
         inputType = graph.inputType.toClass()

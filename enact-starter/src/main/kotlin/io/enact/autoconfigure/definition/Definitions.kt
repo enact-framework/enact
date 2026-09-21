@@ -82,6 +82,11 @@ data class StepReference(
      */
     @param:JsonProperty("else")
     val fallback: JsonNode? = null,
+    /**
+     * Whether the step runs aside: always off the caller's thread, never waited for and never read, so its
+     * failure is logged and recorded rather than reaching the caller.
+     */
+    val side: Boolean = false,
     /** Optional step settings (retry, cache). Values set here override those declared on the step. */
     val settings: StepSettings? = null,
 )

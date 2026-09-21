@@ -166,6 +166,7 @@ open class DefinitionLoaderConfiguration :
                     bindings = reference.bindings(name, step),
                     condition = reference.condition,
                     fallback = reference.fallback(name, step, mapper),
+                    side = reference.side,
                     settings = reference.settings?.orElse(step.settings) ?: step.settings,
                 )
             }
