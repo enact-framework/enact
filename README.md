@@ -2,7 +2,7 @@
 
 Build Spring Boot applications around **use cases** defined in YAML.
 
-Write small steps as ordinary Spring beans, wire them into use cases in `application.yaml`, and let Enact
+Write small steps as ordinary Spring beans, wire them into use cases in a YAML file per domain, and let Enact
 validate the chain at startup, register each use case as an injectable bean, and expose it over HTTP.
 
 ```kotlin
@@ -15,21 +15,21 @@ class OrderService {
 ```
 
 ```yaml
-enact:
-  use-cases:
-    - name: createOrder
-      trigger:
-        rest:
-          method: POST
-          path: /api/v1/orders
-          status: 201
-      steps:
-        - step: validateOrder
-        - step: saveOrder
-          settings:
-            retry:
-              max-retries: 3
-        - step: toResponse
+# src/main/resources/enact/orders.yaml
+use-cases:
+  createOrder:
+    trigger:
+      rest:
+        method: POST
+        path: /api/v1/orders
+        status: 201
+    steps:
+      - step: validateOrder
+      - step: saveOrder
+        settings:
+          retry:
+            max-retries: 3
+      - step: toResponse
 ```
 
 > **Status:** `0.0.1-alpha`, an early preview. APIs may change before 1.0.

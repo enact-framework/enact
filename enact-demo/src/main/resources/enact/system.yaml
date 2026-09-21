@@ -1,0 +1,16 @@
+use-cases:
+  generateId:
+    description: Generates a random identifier
+    group: public
+    trigger:
+      rest:
+        method: GET
+        path: /api/v1/generate-id
+    steps:
+      - step: generateRandomUUID
+
+groups:
+  public:                       # opts out of the default group
+    filters: []
+    observability:
+      enabled: false            # nothing in this group is measured

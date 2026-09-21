@@ -148,16 +148,17 @@ Enact declares the trigger types it ships in `TriggerProperties`, so an IDE comp
 `trigger.rest.*` against `RestTriggerDefinition`. Nothing reads that class at runtime, because trigger types are
 read from the configuration itself. Your trigger type works without an entry there.
 
-An IDE resolves configuration nested in a list by walking Java types, and it does not know your definition class.
-It reports your trigger type as an unresolved property, although the application starts and runs:
+An IDE resolves nested configuration by walking Java types, and it does not know your definition class. It
+reports your trigger type as an unresolved property, although the application starts and runs:
 
 ```
 Cannot resolve property 'queue' in io.enact.core.trigger.TriggerProperties
 ```
 
-Configuration metadata (`additional-spring-configuration-metadata.json`) does not help here: below an indexed
-list such as `enact.use-cases[0]`, metadata keys are ignored. Suppress the inspection, or, if Enact should ship
-the trigger, add it to `TriggerProperties` in a pull request.
+Configuration metadata (`additional-spring-configuration-metadata.json`) does not help here: below a map entry
+such as `enact.use-cases.createOrder`, metadata keys are ignored. Suppress the inspection, or, if Enact should
+ship the trigger, add it to `TriggerProperties` in a pull request. In a definition file the IDE says nothing at
+all, since it does not read them as configuration.
 
 ## Lifecycle
 
@@ -187,16 +188,15 @@ If your definition has its own `filters`, apply them after the group's, as the R
 
 ## Using the trigger
 
-```yaml
-enact:
-  use-cases:
-    - name: handleOrderPlaced
-      trigger:
-        queue: # (1)!
-          name: orders
-          batch-size: 10
-      steps:
-        - step: handleOrderPlaced
+```yaml title="src/main/resources/enact/orders.yaml"
+use-cases:
+  handleOrderPlaced:
+    trigger:
+      queue: # (1)!
+        name: orders
+        batch-size: 10
+    steps:
+      - step: handleOrderPlaced
 ```
 
 1.  Matches `triggerType`. A use case declares exactly one trigger. An unknown type fails startup and lists the

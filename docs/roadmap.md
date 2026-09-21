@@ -11,10 +11,9 @@
 * step settings: retry + cache (cache storage key).
 * HTTP entrypoint
 * Metrics and traces (Micrometer observations)
+* Use case definition files: several files, custom locations
 
 ## V1
-* Allow multiple definitions files 
-* Allow custom location
 * Registered keywords like `side` (to run a task aside), `fork` + `join`, `cache`
 * New entrypoint types
 * Actuator endpoint

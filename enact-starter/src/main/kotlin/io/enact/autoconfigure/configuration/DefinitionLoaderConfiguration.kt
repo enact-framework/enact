@@ -44,8 +44,7 @@ open class DefinitionLoaderConfiguration :
                 .bind("enact", EnactProperties::class.java)
                 .orElse(null) ?: return
 
-        properties.useCases.forEach { useCaseDefinition ->
-            val name = useCaseDefinition.name
+        properties.useCases.forEach { (name, useCaseDefinition) ->
             val group = useCaseDefinition.group
             require(group == null || group in properties.groups) {
                 "Use case '$name' references unknown group '$group'. Known: ${properties.groups.keys}"

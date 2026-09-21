@@ -90,6 +90,7 @@ nav:
   - Guide:
       - Steps: steps.md
       - Use cases: use-cases.md
+      - Definition files: definition-files.md
       - Retry and cache: step-settings.md
       - HTTP trigger: http-trigger.md
       - Custom trigger: custom-trigger.md

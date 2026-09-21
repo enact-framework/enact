@@ -114,24 +114,27 @@ A step is a method annotated with `@Step` that takes zero or one argument:
 
 ## 3. Define the use case
 
-```yaml title="application.yaml"
-enact:
-  use-cases:
-    - name: createOrder
-      description: Validates and stores a new order
-      trigger:
-        rest: # (1)!
-          method: POST
-          path: /api/v1/orders
-          status: 201
-      steps:
-        - step: validateOrderCreation # (2)!
-        - step: saveOrder
-        - step: mapOrderResponse
+Use cases are written in YAML files under `src/main/resources/enact/`, one file per domain:
+
+```yaml title="src/main/resources/enact/orders.yaml"
+use-cases:
+  createOrder:
+    description: Validates and stores a new order
+    trigger:
+      rest: # (1)!
+        method: POST
+        path: /api/v1/orders
+        status: 201
+    steps:
+      - step: validateOrderCreation # (2)!
+      - step: saveOrder
+      - step: mapOrderResponse
 ```
 
 1.  Exposes the use case as `POST /api/v1/orders`. Leave `trigger` out to use it only through injection.
 2.  Steps are referenced by name. `OrderRequest → OrderRequest → OrderEntity → OrderResponse` is checked at startup.
+
+Enact reads every file of that folder. See [Definition files](definition-files.md) to keep them elsewhere.
 
 ## 4. Run it
 

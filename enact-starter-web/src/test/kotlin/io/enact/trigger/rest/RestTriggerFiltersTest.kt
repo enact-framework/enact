@@ -25,24 +25,21 @@ import java.util.UUID
         "enact.groups.default.filters=requireUser",
         "enact.groups.public.filters=",
         "enact.groups.traced.filters=traceA,traceB",
-        "enact.use-cases[0].name=whoAmI",
-        "enact.use-cases[0].trigger.rest.method=GET",
-        "enact.use-cases[0].trigger.rest.path=/me",
-        "enact.use-cases[0].trigger.rest.bind.userId=attribute:userId",
-        "enact.use-cases[0].trigger.rest.bind.trail=attribute:trail",
-        "enact.use-cases[0].steps[0].step=whoAmI",
-        "enact.use-cases[1].name=health",
-        "enact.use-cases[1].group=public",
-        "enact.use-cases[1].trigger.rest.method=GET",
-        "enact.use-cases[1].trigger.rest.path=/health",
-        "enact.use-cases[1].steps[0].step=health",
-        "enact.use-cases[2].name=traced",
-        "enact.use-cases[2].group=traced",
-        "enact.use-cases[2].trigger.rest.method=GET",
-        "enact.use-cases[2].trigger.rest.path=/traced",
-        "enact.use-cases[2].trigger.rest.filters=traceC",
-        "enact.use-cases[2].trigger.rest.bind.trail=attribute:trail",
-        "enact.use-cases[2].steps[0].step=traced",
+        "enact.use-cases.whoAmI.trigger.rest.method=GET",
+        "enact.use-cases.whoAmI.trigger.rest.path=/me",
+        "enact.use-cases.whoAmI.trigger.rest.bind.userId=attribute:userId",
+        "enact.use-cases.whoAmI.trigger.rest.bind.trail=attribute:trail",
+        "enact.use-cases.whoAmI.steps[0].step=whoAmI",
+        "enact.use-cases.health.group=public",
+        "enact.use-cases.health.trigger.rest.method=GET",
+        "enact.use-cases.health.trigger.rest.path=/health",
+        "enact.use-cases.health.steps[0].step=health",
+        "enact.use-cases.traced.group=traced",
+        "enact.use-cases.traced.trigger.rest.method=GET",
+        "enact.use-cases.traced.trigger.rest.path=/traced",
+        "enact.use-cases.traced.trigger.rest.filters=traceC",
+        "enact.use-cases.traced.trigger.rest.bind.trail=attribute:trail",
+        "enact.use-cases.traced.steps[0].step=traced",
     ],
 )
 @AutoConfigureMockMvc
@@ -85,7 +82,7 @@ class RestTriggerFiltersTest {
     @Test
     fun `should fail startup on unknown filter`() {
         runner
-            .withPropertyValues(*useCase("enact.use-cases[0].trigger.rest.filters=missing"))
+            .withPropertyValues(*useCase("enact.use-cases.health.trigger.rest.filters=missing"))
             .run { context ->
                 assertThat(context).hasFailed()
                 assertThat(context.startupFailure).hasStackTraceContaining("filter 'missing'")
@@ -111,10 +108,9 @@ class RestTriggerFiltersTest {
 
     private fun useCase(vararg extra: String) =
         arrayOf(
-            "enact.use-cases[0].name=health",
-            "enact.use-cases[0].trigger.rest.method=GET",
-            "enact.use-cases[0].trigger.rest.path=/health",
-            "enact.use-cases[0].steps[0].step=health",
+            "enact.use-cases.health.trigger.rest.method=GET",
+            "enact.use-cases.health.trigger.rest.path=/health",
+            "enact.use-cases.health.steps[0].step=health",
             *extra,
         )
 

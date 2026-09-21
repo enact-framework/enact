@@ -1,0 +1,9 @@
+use-cases:
+  first:
+    steps:
+      - step: first
+---
+use-cases:
+  second:
+    steps:
+      - step: second

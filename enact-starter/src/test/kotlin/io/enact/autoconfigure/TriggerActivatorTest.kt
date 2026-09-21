@@ -17,9 +17,9 @@ class TriggerActivatorTest {
         runner(handler)
             .withPropertyValues(
                 *useCase(
-                    "enact.use-cases[0].trigger.queue.name=orders",
-                    "enact.use-cases[0].trigger.queue.batch-size=10",
-                    "enact.use-cases[0].trigger.queue.attributes.region=eu-west-1",
+                    "enact.use-cases.greet.trigger.queue.name=orders",
+                    "enact.use-cases.greet.trigger.queue.batch-size=10",
+                    "enact.use-cases.greet.trigger.queue.attributes.region=eu-west-1",
                 ),
             ).run { context ->
                 assertThat(context).hasNotFailed()
@@ -37,7 +37,7 @@ class TriggerActivatorTest {
         val handler = QueueTriggerHandler()
 
         runner(handler)
-            .withPropertyValues(*useCase("enact.use-cases[0].trigger.queue.name=orders"))
+            .withPropertyValues(*useCase("enact.use-cases.greet.trigger.queue.name=orders"))
             .run { context ->
                 assertThat(context).hasNotFailed()
                 assertThat(handler.registrations.single().definition).isEqualTo(QueueTriggerDefinition("orders"))
@@ -51,7 +51,7 @@ class TriggerActivatorTest {
         runner(handler)
             .withPropertyValues(
                 "enact.groups.audited.filters=logMessage,traceMessage",
-                *useCase("enact.use-cases[0].group=audited", "enact.use-cases[0].trigger.queue.name=orders"),
+                *useCase("enact.use-cases.greet.group=audited", "enact.use-cases.greet.trigger.queue.name=orders"),
             ).run { context ->
                 assertThat(handler.registrations.single().groupFilters).containsExactly("logMessage", "traceMessage")
             }
@@ -63,10 +63,9 @@ class TriggerActivatorTest {
 
         runner(handler)
             .withPropertyValues(
-                *useCase("enact.use-cases[0].trigger.queue.name=orders"),
-                "enact.use-cases[1].name=welcome",
-                "enact.use-cases[1].steps[0].step=greet",
-                "enact.use-cases[1].trigger.queue.name=signups",
+                *useCase("enact.use-cases.greet.trigger.queue.name=orders"),
+                "enact.use-cases.welcome.steps[0].step=greet",
+                "enact.use-cases.welcome.trigger.queue.name=signups",
             ).run { context ->
                 assertThat(handler.registeredWhenStarted).containsExactly("greet", "welcome")
                 assertThat(handler.stopped).isFalse()
@@ -89,7 +88,7 @@ class TriggerActivatorTest {
     @Test
     fun `should fail startup on unknown trigger type`() {
         runner(QueueTriggerHandler())
-            .withPropertyValues(*useCase("enact.use-cases[0].trigger.carrierPigeon.name=orders"))
+            .withPropertyValues(*useCase("enact.use-cases.greet.trigger.carrierPigeon.name=orders"))
             .run { context ->
                 assertThat(context).hasFailed()
                 assertThat(context.startupFailure)
@@ -103,8 +102,8 @@ class TriggerActivatorTest {
         runner(QueueTriggerHandler())
             .withPropertyValues(
                 *useCase(
-                    "enact.use-cases[0].trigger.queue.name=orders",
-                    "enact.use-cases[0].trigger.rest.path=/greet",
+                    "enact.use-cases.greet.trigger.queue.name=orders",
+                    "enact.use-cases.greet.trigger.rest.path=/greet",
                 ),
             ).run { context ->
                 assertThat(context).hasFailed()
@@ -120,8 +119,7 @@ class TriggerActivatorTest {
 
     private fun useCase(vararg extra: String) =
         arrayOf(
-            "enact.use-cases[0].name=greet",
-            "enact.use-cases[0].steps[0].step=greet",
+            "enact.use-cases.greet.steps[0].step=greet",
             *extra,
         )
 

@@ -79,22 +79,21 @@ wire them together in YAML, and let Enact check the chain at startup.
 
 ## At a glance
 
-```yaml title="application.yaml"
-enact:
-  use-cases:
-    - name: createOrder # (1)!
-      trigger:
-        rest: # (2)!
-          method: POST
-          path: /api/v1/orders
-          status: 201
-      steps: # (3)!
-        - step: validateOrderCreation
-        - step: saveOrder
-          settings:
-            retry:
-              max-retries: 3 # (4)!
-        - step: mapOrderResponse
+```yaml title="src/main/resources/enact/orders.yaml"
+use-cases:
+  createOrder: # (1)!
+    trigger:
+      rest: # (2)!
+        method: POST
+        path: /api/v1/orders
+        status: 201
+    steps: # (3)!
+      - step: validateOrderCreation
+      - step: saveOrder
+        settings:
+          retry:
+            max-retries: 3 # (4)!
+      - step: mapOrderResponse
 ```
 
 1.  The use case is registered as a Spring bean named `createOrder`.

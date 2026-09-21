@@ -88,12 +88,12 @@ enact:
       observability:
         enabled: false       # nothing in this group is measured
   use-cases:
-    - name: healthPing
+    healthPing:
       observability:
         enabled: false       # this one is not measured
       steps:
         - step: ping
-    - name: auditExport
+    auditExport:
       group: internal
       observability:
         enabled: true        # but this one is, despite its group
