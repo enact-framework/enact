@@ -4,6 +4,7 @@ import io.enact.core.step.StepParameter
 import io.enact.core.step.outputType
 import io.enact.core.step.parameters
 import org.springframework.core.ResolvableType
+import org.springframework.util.ClassUtils
 
 /**
  * The steps of a use case with every edge resolved and checked.
@@ -28,6 +29,10 @@ internal class ResolvedNode(
 ) {
     val id get() = node.id
     val name get() = node.step.name
+
+    /** Set once the graph knows whether anything reads this node; null when nothing does. */
+    var fallback: Fallback? = null
+        internal set
 }
 
 /**
@@ -49,7 +54,66 @@ internal fun buildGraph(
     }
 
     val resolved = byId.values.toList()
-    return UseCaseGraph(resolved, inputTypeOf(useCase, resolved), sinkOf(useCase, resolved, output))
+    val consumed = resolved.flatMap { node -> node.sources.filterIsInstance<Binding.Output>().map { it.node } }.toSet()
+    val sink = sinkOf(useCase, resolved, consumed, output)
+
+    // A conditional step only needs something to yield when skipped if its value is read.
+    resolved.filter { it.node.condition != null && (it.id in consumed || it === sink) }.forEach {
+        it.fallback = fallbackOf(useCase, it)
+    }
+
+    return UseCaseGraph(resolved, inputTypeOf(useCase, resolved), sink)
+}
+
+/**
+ * What a conditional step yields when it is skipped: the input it declares, a literal, or the only input
+ * that can stand in for its output.
+ */
+private fun fallbackOf(
+    useCase: String,
+    node: ResolvedNode,
+): Fallback {
+    val where = "Step '${node.id}' of use case '$useCase' is conditional and read by another step"
+
+    return when (val declared = node.node.fallback) {
+        is Fallback.Parameter -> {
+            val parameter =
+                requireNotNull(node.parameters.firstOrNull { it.name == declared.name }) {
+                    "$where, but its 'else' names '${declared.name}', which is not one of its parameters. " +
+                        "Known: ${node.parameters.map { it.name }}."
+                }
+            require(node.outputType.isAssignableFrom(parameter.type)) {
+                "$where, but its 'else' passes '${declared.name}' through, which is ${parameter.type} " +
+                    "while the step produces ${node.outputType}."
+            }
+            declared
+        }
+
+        is Fallback.Value -> {
+            // `isInstance` is always false on a primitive class, and a step may well produce `int`.
+            val expected = ClassUtils.resolvePrimitiveIfNecessary(node.outputType.toClass())
+            require(declared.value == null || expected.isInstance(declared.value)) {
+                "$where, but its 'else' is a ${declared.value!!::class.java.name} while the step produces " +
+                    "${node.outputType}."
+            }
+            declared
+        }
+
+        null -> {
+            val candidates = node.parameters.filter { node.outputType.isAssignableFrom(it.type) }
+            require(candidates.size == 1) {
+                "$where, so it must say what it yields when skipped. " +
+                    if (candidates.isEmpty()) {
+                        "None of its inputs ${node.parameters.map { it.name }} can stand in for its " +
+                            "${node.outputType} output, so give a value with 'else'."
+                    } else {
+                        "Its inputs ${candidates.map { it.name }} could each stand in for its output; " +
+                            "pick one with 'else: \$${candidates.first().name}'."
+                    }
+            }
+            Fallback.Parameter(candidates.single().name)
+        }
+    }
 }
 
 private fun resolve(
@@ -135,6 +199,7 @@ private fun inputTypeOf(
 private fun sinkOf(
     useCase: String,
     nodes: List<ResolvedNode>,
+    consumed: Set<String>,
     output: String?,
 ): ResolvedNode {
     if (output != null) {
@@ -144,7 +209,6 @@ private fun sinkOf(
         }
     }
 
-    val consumed = nodes.flatMap { node -> node.sources.filterIsInstance<Binding.Output>().map { it.node } }.toSet()
     val terminal = nodes.filterNot { it.id in consumed }
 
     require(terminal.size == 1) {

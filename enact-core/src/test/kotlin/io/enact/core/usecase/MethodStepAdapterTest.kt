@@ -40,7 +40,40 @@ class MethodStepAdapterTest {
         assert(result == "generated")
     }
 
+    @Test
+    fun `should return null from a method that returns null`() {
+        val adapter =
+            MethodAdapter(
+                name = "maybe",
+                settings = null,
+                targetObject = TestService(),
+                method = TestService::class.java.getMethod("maybe", String::class.java),
+            )
+
+        assert(adapter.invoke(listOf("none")) == null) { "Got ${adapter.invoke(listOf("none"))}" }
+        assert(adapter.invoke(listOf("some")) == "value")
+    }
+
+    @Test
+    fun `should return Unit from a method that returns nothing`() {
+        val adapter =
+            MethodAdapter(
+                name = "consume",
+                settings = null,
+                targetObject = TestService(),
+                method = TestService::class.java.getMethod("consume", String::class.java),
+            )
+
+        assert(adapter.invoke(listOf("x")) == Unit)
+    }
+
     class TestService {
+        fun maybe(input: String): String? = "value".takeIf { input == "some" }
+
+        fun consume(input: String) {
+            check(input.isNotEmpty())
+        }
+
         fun toUpperCase(input: String): String = input.uppercase()
 
         fun generateValue(): String = "generated"

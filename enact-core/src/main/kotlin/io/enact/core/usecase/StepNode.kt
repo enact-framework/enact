@@ -14,6 +14,19 @@ sealed interface Binding {
     ) : Binding
 }
 
+/** What a conditional step yields when its condition does not hold. */
+sealed interface Fallback {
+    /** Passes one of the step's own inputs through; its type must stand in for the step's output. */
+    data class Parameter(
+        val name: String,
+    ) : Fallback
+
+    /** A fixed value of the step's output type. */
+    data class Value(
+        val value: Any?,
+    ) : Fallback
+}
+
 /**
  * One step of a use case, and where each of its inputs comes from.
  *
@@ -27,6 +40,13 @@ data class StepNode(
     val step: Step<*, *>,
     /** Source of each parameter, by parameter name. */
     val bindings: Map<String, Binding> = emptyMap(),
+    /** SpEL deciding whether the step runs. Each of its inputs is readable by parameter name. */
+    val condition: String? = null,
+    /**
+     * What the step yields when [condition] does not hold. Inferred when not set, as the only input that can
+     * stand in for the step's output. Needed only when something reads the step.
+     */
+    val fallback: Fallback? = null,
     /** Overrides the settings declared on the step itself. */
     val settings: StepSettings? = step.settings,
 )

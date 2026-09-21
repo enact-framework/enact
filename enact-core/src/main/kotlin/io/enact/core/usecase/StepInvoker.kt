@@ -44,8 +44,16 @@ internal class StepInvoker(
             }
         }
     private val keyExpression: Expression? = settings?.cache?.key?.let { parser.parseExpression(it) }
+    private val condition: Expression? = node.node.condition?.let { parser.parseExpression(it) }
 
+    /**
+     * A step whose condition does not hold is not run, and yields what the graph resolved for it: one of its
+     * own inputs, a declared value, or nothing when no other step reads it. It is not observed either, since
+     * nothing was executed to measure.
+     */
     fun invoke(arguments: List<Any?>): Any? {
+        if (condition != null && !holds(arguments)) return skipped(arguments)
+
         val observation =
             EnactObservationDocumentation.STEP.observation(
                 observations.stepConvention,
@@ -58,6 +66,19 @@ internal class StepInvoker(
 
         return observation.observe(Supplier { invokeStep(arguments, context) })
     }
+
+    private fun holds(arguments: List<Any?>): Boolean =
+        condition!!.getValue(evaluationContext(arguments), Boolean::class.java)
+            ?: throw IllegalStateException(
+                "Condition \"${node.node.condition}\" of step '${node.id}' did not evaluate to a boolean.",
+            )
+
+    private fun skipped(arguments: List<Any?>): Any? =
+        when (val fallback = node.fallback) {
+            null -> null
+            is Fallback.Value -> fallback.value
+            is Fallback.Parameter -> arguments[node.parameters.indexOfFirst { it.name == fallback.name }]
+        }
 
     private fun invokeStep(
         arguments: List<Any?>,

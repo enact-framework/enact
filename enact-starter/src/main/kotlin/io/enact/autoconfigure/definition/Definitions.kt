@@ -64,6 +64,19 @@ data class StepReference(
      */
     @param:JsonProperty("in")
     val inputs: JsonNode? = null,
+    /**
+     * SpEL deciding whether the step runs, e.g. `"#coupon != null"`. Each of the step's inputs is readable by
+     * parameter name, and `#input` names the only one of a step taking a single parameter.
+     */
+    @param:JsonProperty("when")
+    val condition: String? = null,
+    /**
+     * What the step yields when `when` does not hold: `$<parameter>` to pass one of its own inputs through,
+     * or a value of its output type. Inferred when not set, as the only input that can stand in for the
+     * output. Needed only when another step reads this one.
+     */
+    @param:JsonProperty("else")
+    val fallback: JsonNode? = null,
     /** Optional step settings (retry, cache). Values set here override those declared on the step. */
     val settings: StepSettings? = null,
 )

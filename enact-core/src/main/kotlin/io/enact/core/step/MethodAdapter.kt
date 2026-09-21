@@ -10,7 +10,7 @@ class MethodAdapter(
     override val settings: StepSettings?,
     val targetObject: Any,
     val method: Method,
-) : Step.InOut<Any, Any> {
+) : Step.InOut<Any?, Any?> {
     /** One entry per method parameter, in declaration order. Empty for a method taking none. */
     val parameters: List<StepParameter> = parametersOf(name, method)
 
@@ -18,20 +18,23 @@ class MethodAdapter(
     val outputType: ResolvableType =
         if (method.returnType == Void.TYPE) UNIT else ResolvableType.forMethodReturnType(method)
 
+    private val returnsNothing = method.returnType == Void.TYPE
+
     /** Invokes the method with one value per entry of [parameters]. */
-    fun invoke(arguments: List<Any?>): Any {
+    fun invoke(arguments: List<Any?>): Any? {
         require(arguments.size == parameters.size) {
             "Step '$name' takes ${parameters.size} arguments, got ${arguments.size}."
         }
         try {
-            // void methods return null from reflection
-            return method.invoke(targetObject, *arguments.toTypedArray()) ?: Unit
+            val result = method.invoke(targetObject, *arguments.toTypedArray())
+            // A void method returns null from reflection; a step that returns null returns null.
+            return if (returnsNothing) Unit else result
         } catch (e: InvocationTargetException) {
             throw e.targetException
         }
     }
 
-    override fun execute(input: Any): Any = invoke(if (parameters.isEmpty()) emptyList() else listOf(input))
+    override fun execute(input: Any?): Any? = invoke(if (parameters.isEmpty()) emptyList() else listOf(input))
 
     private companion object {
         val UNIT: ResolvableType = ResolvableType.forClass(Unit::class.java)

@@ -1,8 +1,11 @@
 package io.enact.autoconfigure.definition
 
 import io.enact.core.step.Step
+import io.enact.core.step.outputType
 import io.enact.core.step.parameters
 import io.enact.core.usecase.Binding
+import io.enact.core.usecase.Fallback
+import tools.jackson.dataformat.yaml.YAMLMapper
 
 /**
  * Reads the `in` block of a step reference into a binding per parameter name.
@@ -32,6 +35,31 @@ internal fun StepReference.bindings(
     return declared.properties().associate { (name, value) ->
         require(value.isString) { "$where binds '$name' to ${value.nodeType}, but a binding is a reference." }
         name to binding(where, name, value.stringValue())
+    }
+}
+
+/**
+ * Reads the `else` block of a step reference: `$<parameter>` passes that input through, anything else is a
+ * value read into the step's output type, so a mistyped one fails at startup rather than in production.
+ */
+internal fun StepReference.fallback(
+    useCase: String,
+    step: Step<*, *>,
+    mapper: YAMLMapper,
+): Fallback? {
+    val declared = fallback ?: return null
+    val where = "Step '${id ?: this.step}' of use case '$useCase'"
+
+    if (declared.isString && declared.stringValue().startsWith(REFERENCE)) {
+        return Fallback.Parameter(declared.stringValue().removePrefix(REFERENCE))
+    }
+    return try {
+        Fallback.Value(mapper.treeToValue(declared, step.outputType.toClass()))
+    } catch (exception: Exception) {
+        throw IllegalArgumentException(
+            "$where declares an 'else' that is not a ${step.outputType}: ${exception.message}",
+            exception,
+        )
     }
 }
 

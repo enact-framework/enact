@@ -4,6 +4,8 @@ import io.enact.autoconfigure.definition.DefinitionReader
 import io.enact.autoconfigure.definition.Definitions
 import io.enact.autoconfigure.definition.UseCaseDefinition
 import io.enact.autoconfigure.definition.bindings
+import io.enact.autoconfigure.definition.definitionMapper
+import io.enact.autoconfigure.definition.fallback
 import io.enact.autoconfigure.properties.EnactProperties
 import io.enact.core.observation.EnactObservations
 import io.enact.core.observation.StepObservationConvention
@@ -42,6 +44,7 @@ open class DefinitionLoaderConfiguration :
     private lateinit var beanFactory: ConfigurableListableBeanFactory
     private lateinit var environment: Environment
     private var stepBeansInitialized = false
+    private val mapper = definitionMapper()
 
     override fun postProcessBeanDefinitionRegistry(registry: BeanDefinitionRegistry) {
         val properties =
@@ -160,6 +163,8 @@ open class DefinitionLoaderConfiguration :
                     id = reference.id ?: reference.step,
                     step = step,
                     bindings = reference.bindings(name, step),
+                    condition = reference.condition,
+                    fallback = reference.fallback(name, step, mapper),
                     settings = reference.settings?.orElse(step.settings) ?: step.settings,
                 )
             }
