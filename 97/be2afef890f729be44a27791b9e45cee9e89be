@@ -1,0 +1,79 @@
+docs/steps.md
+  s_999d9db2249e43::t_c40820363e127a 3
+  s_999d9db2249e43::t_61abf3f1da8f11 45,49-91
+  s_999d9db2249e43::t_1df0059e659234 159-160,165-166
+  s_999d9db2249e43::t_e7aae21f0e59b9 92
+docs/http-trigger.md
+  s_999d9db2249e43::t_74eb8fc7e02033 184-210
+enact-demo/requests.http
+  s_999d9db2249e43::t_8e666730c44901 35-40
+docs/getting-started.md
+  s_999d9db2249e43::t_f1a9baeb8e0282 57
+  s_999d9db2249e43::t_9ad89ae95e1ae5 135-136,138-139
+docs/roadmap.md
+  s_999d9db2249e43::t_4755e384aef95b 15-18
+enact-demo/src/main/kotlin/io/enact/demo/order/OrderConfirmationService.kt
+  s_999d9db2249e43::t_a960d5a0c51301 1-44
+  s_999d9db2249e43::t_d5ae7ec0097f5a 45-49
+docs/use-cases.md
+  s_999d9db2249e43::t_e444cfd516cf80 154-161
+  s_999d9db2249e43::t_2c5adea022c15e 44-45
+  s_999d9db2249e43::t_b4534e74c98ea8 141-142
+  s_999d9db2249e43::t_7aedf273aa49b1 240
+  s_999d9db2249e43::t_0a3e1cb135690d 162-163,167-176
+  s_999d9db2249e43::t_89fba11b4e752f 3,9,12-27,30-31,33-39,41-42,49,51-58,61-93,96-140,143-153,164-166,177-232,235-239,241-255,257-259,261,272,275,284,286,291
+  s_999d9db2249e43::t_083d0459e70ab3 94-95
+enact-demo/src/main/kotlin/io/enact/demo/order/transfer/OrderConfirmation.kt
+  s_999d9db2249e43::t_c27147463a20e1 1-10
+docs/step-settings.md
+  s_999d9db2249e43::t_59fdd8853c68ac 87
+  s_999d9db2249e43::t_09d1e2b47ace88 77,79
+  s_999d9db2249e43::t_5de67f97d38458 71-76,78,80-86,88-92
+README.md
+  s_999d9db2249e43::t_dd444731191d6d 6-9,16-18,26,33,38-43
+docs/custom-trigger.md
+  s_999d9db2249e43::t_74eb8fc7e02033 158-160,175
+docs/definition-files.md
+  s_999d9db2249e43::t_dd560cd3bb74ac 120,127-145,148-151
+  s_999d9db2249e43::t_2dc721f56df518 110,113-114,125
+  s_999d9db2249e43::t_8c6b3f628f55e6 122-123
+  s_999d9db2249e43::t_0873138aeacff3 16,27-31,73-74,88-100,106-107,118-119
+  s_999d9db2249e43::t_437d63ca93f9cb 117
+CLAUDE.md
+  s_999d9db2249e43::t_c531269453d44c 7,11-12,19,27-35,40,48-104,107-126,136-146,173
+enact-demo/src/main/resources/enact/orders.yaml
+  s_999d9db2249e43::t_3a404851507483 58-87
+enact-demo/src/main/kotlin/io/enact/demo/order/transfer/ConfirmOrderCommand.kt
+  s_999d9db2249e43::t_755d84839b8484 1-9
+docs/index.md
+  s_999d9db2249e43::t_2f65e9d6c313f5 90-91,96-99,104,106-108,113
+  s_999d9db2249e43::t_1a37f8ca7c2dae 50
+  s_999d9db2249e43::t_dbb5d396562f4a 16
+  s_999d9db2249e43::t_aa6c52e44e373b 42
+enact-demo/src/main/kotlin/io/enact/demo/order/model/ShippingEstimate.kt
+  s_999d9db2249e43::t_0fb22ba9a10f5b 1-6
+enact-demo/src/main/kotlin/io/enact/demo/order/OrderPersistingService.kt
+  s_999d9db2249e43::t_61971a89469353 7
+  s_999d9db2249e43::t_87fa4949b7f0ef 37-39
+  s_999d9db2249e43::t_e3f0e4d2f6322d 40
+docs/observability.md
+  s_999d9db2249e43::t_74eb8fc7e02033 82,86-105
+docs/schema/definition-file.schema.json
+  s_999d9db2249e43::t_4c02d05d2c418f 1-266
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "97be2afef890f729be44a27791b9e45cee9e89be",
+  "prompts": {},
+  "sessions": {
+    "s_999d9db2249e43": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0a311664-cc03-4b56-81bc-be00dcccbb78",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Vladlen Gladis <17303517+gvart@users.noreply.github.com>"
+    }
+  }
+}
