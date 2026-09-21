@@ -1,0 +1,22 @@
+.github/pull_request_template.md
+  s_dd069ed2968c63::t_9a02d2da20ccb2 1-13
+.github/workflows/ci.yml
+  s_dd069ed2968c63::t_3d906fa67e1423 19-20
+  s_dd069ed2968c63::t_2bcc207ba37637 1-18,21-42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "e47db8b1ea9e8868c6c9c11b703bd16882b79369",
+  "prompts": {},
+  "sessions": {
+    "s_dd069ed2968c63": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "416b2839-fae9-4314-8eff-face174f8256",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Vladlen Gladis <17303517+gvart@users.noreply.github.com>"
+    }
+  }
+}
