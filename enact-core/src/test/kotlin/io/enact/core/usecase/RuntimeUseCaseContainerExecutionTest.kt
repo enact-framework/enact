@@ -12,7 +12,7 @@ class RuntimeUseCaseContainerExecutionTest {
             RuntimeUseCaseContainer<String, Int>(
                 name = "parse-int",
                 description = "Parses string to int",
-                steps = listOf(stringToIntStep()),
+                nodes = nodes(stringToIntStep()),
             )
 
         val result = useCase.execute("42")
@@ -26,7 +26,7 @@ class RuntimeUseCaseContainerExecutionTest {
             RuntimeUseCaseContainer<String, String>(
                 name = "transform",
                 description = "Transforms string",
-                steps = listOf(stringToIntStep(), intToStringStep()),
+                nodes = nodes(stringToIntStep(), intToStringStep()),
             )
 
         val result = useCase.execute("42")
@@ -62,7 +62,7 @@ class RuntimeUseCaseContainerExecutionTest {
             RuntimeUseCaseContainer<String, Int>(
                 name = "pipeline",
                 description = "Three step pipeline",
-                steps = listOf(appendStep, lengthStep, doubleStep),
+                nodes = nodes(appendStep, lengthStep, doubleStep),
             )
 
         val result = useCase.execute("hi")
@@ -85,7 +85,7 @@ class RuntimeUseCaseContainerExecutionTest {
             RuntimeUseCaseContainer<String, String>(
                 name = "failing-uc",
                 description = "Fails",
-                steps = listOf(failingStep),
+                nodes = nodes(failingStep),
             )
 
         assertThrows<RuntimeException> {
@@ -109,7 +109,7 @@ class RuntimeUseCaseContainerExecutionTest {
             RuntimeUseCaseContainer<String, String?>(
                 name = "null-uc",
                 description = "Returns null",
-                steps = listOf(nullStep),
+                nodes = nodes(nullStep),
             )
 
         val result = useCase.execute("input")

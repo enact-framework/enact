@@ -12,7 +12,7 @@ class UseCaseContainerTest {
             RuntimeUseCaseContainer<String, Int>(
                 name = "test",
                 description = "test",
-                steps = emptyList(),
+                nodes = emptyList(),
             )
         }.also {
             assert(it.message == "Must specify at least one step.")
@@ -24,7 +24,7 @@ class UseCaseContainerTest {
         RuntimeUseCaseContainer<String, Int>(
             name = "test",
             description = "test",
-            steps = listOf(stringToInt()),
+            nodes = nodes(stringToInt()),
         )
     }
 
@@ -33,7 +33,7 @@ class UseCaseContainerTest {
         RuntimeUseCaseContainer<String, Int>(
             name = "test",
             description = "test",
-            steps = listOf(stringToLong(), longToInt()),
+            nodes = nodes(stringToLong(), longToInt()),
         )
     }
 
@@ -43,7 +43,7 @@ class UseCaseContainerTest {
             RuntimeUseCaseContainer<String, String>(
                 name = "test",
                 description = "test",
-                steps = listOf(stringToLong(), intToString()),
+                nodes = nodes(stringToLong(), intToString()),
             )
         }
     }
@@ -54,7 +54,7 @@ class UseCaseContainerTest {
             RuntimeUseCaseContainer<String, Int>(
                 name = "test",
                 description = "test",
-                steps = listOf(stringToLong(), stringToInt()),
+                nodes = nodes(stringToLong(), stringToInt()),
             )
         }
     }
@@ -64,7 +64,7 @@ class UseCaseContainerTest {
         RuntimeUseCaseContainer<String, Unit>(
             name = "test",
             description = "test",
-            steps = listOf(stringToLong(), longInStep()),
+            nodes = nodes(stringToLong(), longInStep()),
         )
     }
 
@@ -73,7 +73,7 @@ class UseCaseContainerTest {
         RuntimeUseCaseContainer<Unit, Int>(
             name = "test",
             description = "test",
-            steps = listOf(longOutStep(), longToInt()),
+            nodes = nodes(longOutStep(), longToInt()),
         )
     }
 
@@ -82,7 +82,7 @@ class UseCaseContainerTest {
         RuntimeUseCaseContainer<Unit, Unit>(
             name = "test",
             description = "test",
-            steps = listOf(stringOutStep(), stringToLong(), longInStep()),
+            nodes = nodes(stringOutStep(), stringToLong(), longInStep()),
         )
     }
 
@@ -92,7 +92,7 @@ class UseCaseContainerTest {
             RuntimeUseCaseContainer<Unit, Int>(
                 name = "test",
                 description = "test",
-                steps = listOf(stringOutStep(), longToInt()),
+                nodes = nodes(stringOutStep(), longToInt()),
             )
         }
     }
@@ -103,9 +103,31 @@ class UseCaseContainerTest {
             RuntimeUseCaseContainer<String, Unit>(
                 name = "test",
                 description = "test",
-                steps = listOf(stringToLong(), stringInStep()),
+                nodes = nodes(stringToLong(), stringInStep()),
             )
         }
+    }
+
+    @Test
+    fun `should fail when steps agree on the raw type but not on its generics`() {
+        assertThrows<IllegalArgumentException> {
+            RuntimeUseCaseContainer<Unit, Int>(
+                name = "test",
+                description = "test",
+                nodes = nodes(listOfStringOutStep(), listOfLongToInt()),
+            )
+        }.also {
+            assert(it.message!!.contains("java.lang.String")) { "Expected the generic in the message: ${it.message}" }
+        }
+    }
+
+    @Test
+    fun `should succeed when a step produces a subtype of the next step's input`() {
+        RuntimeUseCaseContainer<Unit, Int>(
+            name = "test",
+            description = "test",
+            nodes = nodes(arrayListOfLongOutStep(), listOfLongToInt()),
+        )
     }
 
     // -- InOutStep fixtures --
@@ -176,5 +198,31 @@ class UseCaseContainerTest {
             override var settings: StepSettings? = null
 
             override fun execute(input: Unit): Long = 0L
+        }
+
+    // -- generic fixtures --
+
+    private fun listOfStringOutStep() =
+        object : Step.Out<List<String>> {
+            override val name = "list-of-string-out-step"
+            override var settings: StepSettings? = null
+
+            override fun execute(input: Unit): List<String> = emptyList()
+        }
+
+    private fun arrayListOfLongOutStep() =
+        object : Step.Out<ArrayList<Long>> {
+            override val name = "array-list-of-long-out-step"
+            override var settings: StepSettings? = null
+
+            override fun execute(input: Unit): ArrayList<Long> = ArrayList()
+        }
+
+    private fun listOfLongToInt() =
+        object : Step.InOut<List<Long>, Int> {
+            override val name = "list-of-long-to-int"
+            override var settings: StepSettings? = null
+
+            override fun execute(input: List<Long>): Int = input.size
         }
 }

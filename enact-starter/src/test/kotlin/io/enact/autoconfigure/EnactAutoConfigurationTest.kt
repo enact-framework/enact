@@ -25,7 +25,14 @@ class EnactAutoConfigurationTest {
             .withBean(Consumer::class.java)
             .withBean(Greeter::class.java)
             .withPropertyValues(
-                "enact.use-cases.greet.steps[0].step=greet",
+                definitions(
+                    """
+                    use-cases:
+                      greet:
+                        steps:
+                          - step: greet
+                    """,
+                ),
             ).run { context ->
                 assertThat(context).hasNotFailed()
                 assertThat(context.getBean(Consumer::class.java).useCase.execute("Ann")).isEqualTo("Hello Ann")
@@ -37,8 +44,15 @@ class EnactAutoConfigurationTest {
         runner
             .withBean(Greeter::class.java)
             .withPropertyValues(
-                "enact.use-cases.greet.group=admin",
-                "enact.use-cases.greet.steps[0].step=greet",
+                definitions(
+                    """
+                    use-cases:
+                      greet:
+                        group: admin
+                        steps:
+                          - step: greet
+                    """,
+                ),
             ).run { context ->
                 assertThat(context).hasFailed()
                 assertThat(context.startupFailure).hasStackTraceContaining("unknown group 'admin'")
@@ -50,9 +64,18 @@ class EnactAutoConfigurationTest {
         runner
             .withBean(Flaky::class.java)
             .withPropertyValues(
-                "enact.use-cases.flaky.steps[0].step=flaky",
-                "enact.use-cases.flaky.steps[0].settings.retry.max-retries=2",
-                "enact.use-cases.flaky.steps[0].settings.retry.delay=1ms",
+                definitions(
+                    """
+                    use-cases:
+                      flaky:
+                        steps:
+                          - step: flaky
+                            settings:
+                              retry:
+                                max-retries: 2
+                                delay: 1ms
+                    """,
+                ),
             ).run { context ->
                 val useCase = context.getBean("flaky") as UseCase<String, String>
 
@@ -66,9 +89,18 @@ class EnactAutoConfigurationTest {
         runner
             .withBean(Flaky::class.java)
             .withPropertyValues(
-                "enact.use-cases.flaky.steps[0].step=flaky",
-                "enact.use-cases.flaky.steps[0].settings.retry.max-retries=1",
-                "enact.use-cases.flaky.steps[0].settings.retry.delay=1ms",
+                definitions(
+                    """
+                    use-cases:
+                      flaky:
+                        steps:
+                          - step: flaky
+                            settings:
+                              retry:
+                                max-retries: 1
+                                delay: 1ms
+                    """,
+                ),
             ).run { context ->
                 val useCase = context.getBean("flaky") as UseCase<String, String>
 
@@ -83,10 +115,21 @@ class EnactAutoConfigurationTest {
         runner
             .withBean(Flaky::class.java)
             .withPropertyValues(
-                "enact.use-cases.withRetry.steps[0].step=flaky",
-                "enact.use-cases.withRetry.steps[0].settings.retry.max-retries=2",
-                "enact.use-cases.withRetry.steps[0].settings.retry.delay=1ms",
-                "enact.use-cases.withoutRetry.steps[0].step=flaky",
+                definitions(
+                    """
+                    use-cases:
+                      withRetry:
+                        steps:
+                          - step: flaky
+                            settings:
+                              retry:
+                                max-retries: 2
+                                delay: 1ms
+                      withoutRetry:
+                        steps:
+                          - step: flaky
+                    """,
+                ),
             ).run { context ->
                 val useCase = context.getBean("withRetry") as UseCase<String, String>
 
@@ -99,7 +142,14 @@ class EnactAutoConfigurationTest {
         runner
             .withBean(AnnotatedFlaky::class.java)
             .withPropertyValues(
-                "enact.use-cases.flaky.steps[0].step=annotatedFlaky",
+                definitions(
+                    """
+                    use-cases:
+                      flaky:
+                        steps:
+                          - step: annotatedFlaky
+                    """,
+                ),
             ).run { context ->
                 val useCase = context.getBean("flaky") as UseCase<String, String>
 
@@ -113,9 +163,18 @@ class EnactAutoConfigurationTest {
             .withBean(Counter::class.java)
             .withBean(CacheManager::class.java, { ConcurrentMapCacheManager() })
             .withPropertyValues(
-                "enact.use-cases.count.steps[0].step=count",
-                "enact.use-cases.count.steps[0].settings.cache.name=counts",
-                "enact.use-cases.count.steps[0].settings.cache.key=#input.id",
+                definitions(
+                    """
+                    use-cases:
+                      count:
+                        steps:
+                          - step: count
+                            settings:
+                              cache:
+                                name: counts
+                                key: "#input.id"
+                    """,
+                ),
             ).run { context ->
                 val useCase = context.getBean("count") as UseCase<Query, Int>
 
@@ -130,8 +189,17 @@ class EnactAutoConfigurationTest {
         runner
             .withBean(Counter::class.java)
             .withPropertyValues(
-                "enact.use-cases.count.steps[0].step=count",
-                "enact.use-cases.count.steps[0].settings.cache.name=counts",
+                definitions(
+                    """
+                    use-cases:
+                      count:
+                        steps:
+                          - step: count
+                            settings:
+                              cache:
+                                name: counts
+                    """,
+                ),
             ).run { context ->
                 assertThat(context)
                     .hasFailed()
@@ -147,8 +215,17 @@ class EnactAutoConfigurationTest {
             .withBean(Counter::class.java)
             .withBean(CacheManager::class.java, { ConcurrentMapCacheManager() })
             .withPropertyValues(
-                "enact.use-cases.count.steps[0].step=count",
-                "enact.use-cases.count.steps[0].settings.cache.name=counts",
+                definitions(
+                    """
+                    use-cases:
+                      count:
+                        steps:
+                          - step: count
+                            settings:
+                              cache:
+                                name: counts
+                    """,
+                ),
             ).run { context ->
                 val useCase = context.getBean("count") as UseCase<Query, Int>
 
@@ -164,8 +241,17 @@ class EnactAutoConfigurationTest {
             .withBean(Flaky::class.java)
             .withBean(CacheManager::class.java, { ConcurrentMapCacheManager() })
             .withPropertyValues(
-                "enact.use-cases.flaky.steps[0].step=flaky",
-                "enact.use-cases.flaky.steps[0].settings.cache.name=results",
+                definitions(
+                    """
+                    use-cases:
+                      flaky:
+                        steps:
+                          - step: flaky
+                            settings:
+                              cache:
+                                name: results
+                    """,
+                ),
             ).run { context ->
                 val useCase = context.getBean("flaky") as UseCase<String, String>
 
@@ -183,10 +269,20 @@ class EnactAutoConfigurationTest {
             .withBean(Flaky::class.java)
             .withBean(CacheManager::class.java, { ConcurrentMapCacheManager() })
             .withPropertyValues(
-                "enact.use-cases.flaky.steps[0].step=flaky",
-                "enact.use-cases.flaky.steps[0].settings.retry.max-retries=2",
-                "enact.use-cases.flaky.steps[0].settings.retry.delay=1ms",
-                "enact.use-cases.flaky.steps[0].settings.cache.name=results",
+                definitions(
+                    """
+                    use-cases:
+                      flaky:
+                        steps:
+                          - step: flaky
+                            settings:
+                              retry:
+                                max-retries: 2
+                                delay: 1ms
+                              cache:
+                                name: results
+                    """,
+                ),
             ).run { context ->
                 val useCase = context.getBean("flaky") as UseCase<String, String>
 
@@ -202,7 +298,14 @@ class EnactAutoConfigurationTest {
             .withBean(AnnotatedCounter::class.java)
             .withBean(CacheManager::class.java, { ConcurrentMapCacheManager() })
             .withPropertyValues(
-                "enact.use-cases.count.steps[0].step=annotatedCount",
+                definitions(
+                    """
+                    use-cases:
+                      count:
+                        steps:
+                          - step: annotatedCount
+                    """,
+                ),
             ).run { context ->
                 val useCase = context.getBean("count") as UseCase<Query, Int>
 
@@ -218,7 +321,14 @@ class EnactAutoConfigurationTest {
             .withBean("classCounter", ClassCounter::class.java)
             .withBean(CacheManager::class.java, { ConcurrentMapCacheManager() })
             .withPropertyValues(
-                "enact.use-cases.count.steps[0].step=classCounter",
+                definitions(
+                    """
+                    use-cases:
+                      count:
+                        steps:
+                          - step: classCounter
+                    """,
+                ),
             ).run { context ->
                 val useCase = context.getBean("count") as UseCase<Query, Int>
 
@@ -234,9 +344,18 @@ class EnactAutoConfigurationTest {
             .withBean(AnnotatedCounter::class.java)
             .withBean(CacheManager::class.java, { ConcurrentMapCacheManager() })
             .withPropertyValues(
-                "enact.use-cases.count.steps[0].step=annotatedCount",
-                "enact.use-cases.count.steps[0].settings.cache.name=byNote",
-                "enact.use-cases.count.steps[0].settings.cache.key=#input.note",
+                definitions(
+                    """
+                    use-cases:
+                      count:
+                        steps:
+                          - step: annotatedCount
+                            settings:
+                              cache:
+                                name: byNote
+                                key: "#input.note"
+                    """,
+                ),
             ).run { context ->
                 val useCase = context.getBean("count") as UseCase<Query, Int>
 
@@ -253,8 +372,17 @@ class EnactAutoConfigurationTest {
             .withBean(Counter::class.java)
             .withBean(CacheManager::class.java, { ConcurrentMapCacheManager("other") })
             .withPropertyValues(
-                "enact.use-cases.count.steps[0].step=count",
-                "enact.use-cases.count.steps[0].settings.cache.name=counts",
+                definitions(
+                    """
+                    use-cases:
+                      count:
+                        steps:
+                          - step: count
+                            settings:
+                              cache:
+                                name: counts
+                    """,
+                ),
             ).run { context ->
                 assertThat(context)
                     .hasFailed()
@@ -270,8 +398,17 @@ class EnactAutoConfigurationTest {
             .withBean(Greeter::class.java)
             .withBean(Consumer::class.java)
             .withPropertyValues(
-                "enact.use-cases.other.steps[0].step=greet",
-                "enact.use-cases.useCase.steps[0].step=greet",
+                definitions(
+                    """
+                    use-cases:
+                      other:
+                        steps:
+                          - step: greet
+                      useCase:
+                        steps:
+                          - step: greet
+                    """,
+                ),
             ).run { context ->
                 assertThat(context).hasNotFailed()
                 assertThat(context.getBean(Consumer::class.java).useCase).isSameAs(context.getBean("useCase"))
@@ -283,10 +420,19 @@ class EnactAutoConfigurationTest {
         runner
             .withBean(Flaky::class.java)
             .withPropertyValues(
-                "enact.use-cases.flaky.steps[0].step=flaky",
-                "enact.use-cases.flaky.steps[0].settings.retry.max-retries=2",
-                "enact.use-cases.flaky.steps[0].settings.retry.delay=1ms",
-                "enact.use-cases.flaky.steps[0].settings.retry.includes=java.lang.IllegalArgumentException",
+                definitions(
+                    """
+                    use-cases:
+                      flaky:
+                        steps:
+                          - step: flaky
+                            settings:
+                              retry:
+                                max-retries: 2
+                                delay: 1ms
+                                includes: [java.lang.IllegalArgumentException]
+                    """,
+                ),
             ).run { context ->
                 val useCase = context.getBean("flaky") as UseCase<String, String>
 

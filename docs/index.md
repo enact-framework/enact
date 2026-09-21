@@ -13,7 +13,7 @@ hide:
 # Enact
 
 Build Spring Boot applications around **use cases**. Write small steps as ordinary Spring beans,
-wire them together in YAML, and let Enact check the chain at startup.
+wire them into a graph in YAML, and let Enact check every edge at startup.
 
 [Get started :material-arrow-right:](getting-started.md){ .md-button .md-button--primary }
 [View on GitHub :fontawesome-brands-github:](https://github.com/enact-framework/enact){ .md-button }
@@ -39,7 +39,7 @@ wire them together in YAML, and let Enact check the chain at startup.
 
     ---
 
-    Wire steps into use cases in `application.yaml`. Every use case becomes an injectable `UseCase<I, O>` bean.
+    Wire steps into a use case in a YAML file. Every use case becomes an injectable `UseCase<I, O>` bean.
 
     [:octicons-arrow-right-24: Use cases](use-cases.md)
 
@@ -47,7 +47,7 @@ wire them together in YAML, and let Enact check the chain at startup.
 
     ---
 
-    Missing steps, duplicate names, and mismatched types between steps stop the application at startup, not in production.
+    Missing steps, duplicate ids, and an edge whose types do not fit stop the application at startup, not in production.
 
     [:octicons-arrow-right-24: Validation](use-cases.md#validation)
 
@@ -87,24 +87,30 @@ use-cases:
         method: POST
         path: /api/v1/orders
         status: 201
-    steps: # (3)!
-      - step: validateOrderCreation
+    steps:
+      - step: validateOrder # (3)!
       - step: saveOrder
         settings:
           retry:
             max-retries: 3 # (4)!
-      - step: mapOrderResponse
+      - step: priceOrder
+        in: $validateOrder # (5)!
+      - step: buildInvoice
+        in: { order: $saveOrder, price: $priceOrder } # (6)!
 ```
 
 1.  The use case is registered as a Spring bean named `createOrder`.
 2.  Optional. Without a trigger, the use case is only available through injection.
-3.  Steps run in order. Each step's output type must match the next step's input type.
+3.  Nothing is bound, so the step reads the one declared before it, or the use case's input when it is first.
 4.  Settings apply to this use case only. The same step can be retried here and not elsewhere.
+5.  `$validateOrder` reads another step's output, so `saveOrder` and `priceOrder` both branch off the same value.
+6.  A step taking two inputs binds each of them by name. `buildInvoice` is what the use case returns: nothing
+    reads it.
 
 At startup Enact:
 
 - resolves every step name to a step bean,
-- checks that each step's output type matches the next step's input type, and fails fast if it doesn't,
+- checks that every edge of the graph carries a type the step it feeds accepts, and fails fast if it doesn't,
 - registers each use case as a Spring bean you can inject, and
 - optionally exposes it as an HTTP endpoint.
 

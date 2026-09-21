@@ -1,11 +1,12 @@
 package io.enact.autoconfigure.properties
 
-import io.enact.core.step.StepSettings
-import io.enact.core.trigger.TriggerProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 /**
  * Configuration properties for Enact.
+ *
+ * Use cases and groups are not here: they live in definition files, read by
+ * [io.enact.autoconfigure.definition.DefinitionReader].
  */
 @ConfigurationProperties(prefix = "enact")
 data class EnactProperties(
@@ -13,15 +14,9 @@ data class EnactProperties(
     val enabled: Boolean = true,
     /**
      * Where the definition files are, as a file, a directory or an Ant pattern, for example
-     * `classpath:enact/orders.yaml`. A location may start with `optional:` when it may be missing. Read by
-     * [io.enact.autoconfigure.definition.DefinitionFileLoader] before the application starts, which is why
-     * nothing reads it here. The default declared here is the one the loader falls back to.
+     * `classpath:enact/orders.yaml`. A location may start with `optional:` when it may be missing.
      */
     val definitions: List<String> = listOf("optional:classpath:enact/"),
-    /** Use case definitions by name, from the definition files and from the application configuration. */
-    val useCases: Map<String, UseCaseDefinition> = emptyMap(),
-    /** Groups of use cases sharing REST filters, by name. Group `default` applies to use cases without a group. */
-    val groups: Map<String, GroupDefinition> = emptyMap(),
     /** Metrics and traces recorded for every use case, unless its group or the use case itself opts out. */
     val observability: ObservabilitySpec = ObservabilitySpec(),
 ) {
@@ -32,35 +27,4 @@ data class EnactProperties(
          */
         val enabled: Boolean? = null,
     )
-
-    data class GroupDefinition(
-        /** Names of the filter beans wrapping the group's use cases, outermost first; the trigger type defines their kind. */
-        val filters: List<String> = emptyList(),
-        /** Observability for the group's use cases; unset inherits `enact.observability`. */
-        val observability: ObservabilitySpec? = null,
-    )
-
-    data class UseCaseDefinition(
-        /** Description of the use case. */
-        val description: String?,
-        /** Group the use case belongs to; `default` when not set. */
-        val group: String? = null,
-        /**
-         * Optional trigger exposing the use case (e.g. as an HTTP endpoint), as a single entry keyed by trigger
-         * type, e.g. `rest`. Its value is bound by the `TriggerHandler` of that type, which may be one this class
-         * does not name. Without a trigger, the use case can only be injected.
-         */
-        val trigger: TriggerProperties? = null,
-        /** Observability for this use case; unset inherits its group, then `enact.observability`. */
-        val observability: ObservabilitySpec? = null,
-        /** Ordered list of steps to execute. */
-        val steps: List<StepReference>,
-    ) {
-        data class StepReference(
-            /** Name of the step bean to execute. */
-            val step: String,
-            /** Optional step settings (retry, cache). Values set here override those declared on the step. */
-            val settings: StepSettings? = null,
-        )
-    }
 }

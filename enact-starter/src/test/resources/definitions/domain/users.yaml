@@ -1,7 +1,0 @@
-use-cases:
-  createUser:
-    steps:
-      - step: saveUser
-  findUser:
-    steps:
-      - step: findUser

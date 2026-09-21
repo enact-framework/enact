@@ -1,0 +1,266 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://enact-framework.github.io/enact/schema/definition-file.schema.json",
+  "title": "Enact definition file",
+  "description": "A definition file declares the use cases and groups of an Enact application. Files are listed under `enact.definitions` and default to `optional:classpath:enact/`. A file declares `use-cases` and `groups` at its root, without the `enact` prefix; anything else is rejected with the line it is on. A use case name and a group name are each declared once across every file.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "use-cases": {
+      "description": "Use cases by name. The name is also the name of the `UseCase` bean the use case is registered as.",
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/useCase" }
+    },
+    "groups": {
+      "description": "Groups by name. A group holds what its use cases share: the filters wrapping them and their observability.",
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/group" }
+    }
+  },
+  "$defs": {
+    "group": {
+      "title": "Group",
+      "description": "Settings shared by the use cases of a group. The group named `default` applies to every use case without a `group`.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "filters": {
+          "description": "Names of the filter beans wrapping the group's use cases, outermost first; the trigger type defines their kind (`HandlerFilterFunction` for the REST trigger).",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "observability": {
+          "description": "Observability for the group's use cases; unset inherits `enact.observability`.",
+          "$ref": "#/$defs/observability"
+        }
+      }
+    },
+    "useCase": {
+      "title": "Use case",
+      "description": "A use case: a typed directed graph of steps, registered as an injectable `UseCase<Input, Output>` bean and optionally exposed through a trigger.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "description": "Description of the use case.",
+          "type": "string"
+        },
+        "group": {
+          "description": "Group the use case belongs to; `default` when not set.",
+          "type": "string"
+        },
+        "trigger": {
+          "description": "Optional trigger exposing the use case (e.g. as an HTTP endpoint), as a single entry keyed by trigger type, e.g. `rest`. Its value stays a tree until the `TriggerHandler` claiming that type reads it into its own definition. Without a trigger, the use case can only be injected.",
+          "type": "object",
+          "maxProperties": 1,
+          "properties": {
+            "rest": { "$ref": "#/$defs/restTrigger" }
+          }
+        },
+        "observability": {
+          "description": "Observability for this use case; unset inherits its group, then `enact.observability`.",
+          "$ref": "#/$defs/observability"
+        },
+        "output": {
+          "description": "Step whose output the use case returns; inferred when not set as the only one nothing reads. Steps that run aside are ignored, and feeding a step that runs aside does not use a value up.",
+          "type": "string"
+        },
+        "concurrent": {
+          "description": "Whether steps that do not read each other run at once. Off by default: a step moved off the caller's thread leaves any surrounding transaction, `SecurityContext` and MDC behind.",
+          "type": "boolean",
+          "default": false
+        },
+        "steps": {
+          "description": "Steps in declaration order; each may only bind to one declared before it, so declaration order is already a topological order and a cycle cannot be written.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/stepReference" }
+        }
+      }
+    },
+    "stepReference": {
+      "title": "Step reference",
+      "description": "One node of the use case's graph: the step to execute, where each of its inputs comes from, and when it runs.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["step"],
+      "properties": {
+        "step": {
+          "description": "Name of the step bean to execute.",
+          "type": "string"
+        },
+        "id": {
+          "description": "Identifies the step within the use case; defaults to `step`, so a step used twice needs one.",
+          "type": "string"
+        },
+        "in": {
+          "description": "Where the step's inputs come from: `$input` for the use case's own input, `$<step id>` for another step's output. Either one reference for a step taking a single parameter, or one per parameter by name. Left out, a single parameter reads the step declared before it.",
+          "oneOf": [
+            {
+              "description": "One reference, for a step taking a single parameter.",
+              "type": "string",
+              "pattern": "^\\$"
+            },
+            {
+              "description": "One reference per parameter, keyed by parameter name. Only a step written as an annotated method can take several parameters.",
+              "type": "object",
+              "additionalProperties": {
+                "type": "string",
+                "pattern": "^\\$"
+              }
+            }
+          ]
+        },
+        "when": {
+          "description": "SpEL deciding whether the step runs, e.g. `\"#coupon != null\"`. Each of the step's inputs is readable by parameter name, and `#input` names the only one of a step taking a single parameter. A skipped step is not observed.",
+          "type": "string"
+        },
+        "else": {
+          "description": "What the step yields when `when` does not hold: `$<parameter>` to pass one of its own inputs through, or a value of its output type. Inferred when not set, as the only input that can stand in for the output. Needed only when another step reads this one."
+        },
+        "side": {
+          "description": "Whether the step runs aside: always off the caller's thread, never waited for and never read, so its failure is logged and recorded rather than reaching the caller.",
+          "type": "boolean",
+          "default": false
+        },
+        "settings": {
+          "description": "Optional step settings (retry, cache). Values set here override those declared on the step.",
+          "$ref": "#/$defs/stepSettings"
+        }
+      }
+    },
+    "stepSettings": {
+      "title": "Step settings",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "retry": {
+          "description": "Retries the step until it succeeds or the policy gives up.",
+          "$ref": "#/$defs/retry"
+        },
+        "cache": {
+          "description": "Caches the step's result; a hit skips the step and its retries entirely.",
+          "$ref": "#/$defs/cache"
+        }
+      }
+    },
+    "retry": {
+      "title": "Retry",
+      "description": "Retry policy of a step, built on `org.springframework.core.retry`.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "includes": {
+          "description": "Fully qualified exception class names to retry on; every exception when empty.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "excludes": {
+          "description": "Fully qualified exception class names never to retry on.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "max-retries": {
+          "description": "Maximum number of retries after the first attempt.",
+          "type": "integer",
+          "minimum": 0
+        },
+        "timeout": {
+          "description": "Time after which no further retry is started; zero means no timeout.",
+          "$ref": "#/$defs/duration"
+        },
+        "delay": {
+          "description": "Base delay before the first retry.",
+          "$ref": "#/$defs/duration"
+        },
+        "jitter": {
+          "description": "Maximum random amount added to each delay.",
+          "$ref": "#/$defs/duration"
+        },
+        "multiplier": {
+          "description": "Factor the delay is multiplied by after each attempt.",
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "max-delay": {
+          "description": "Upper bound the multiplied delay never exceeds.",
+          "$ref": "#/$defs/duration"
+        }
+      }
+    },
+    "cache": {
+      "title": "Cache",
+      "description": "Caches the step's result in the application's `CacheManager`, which must know the cache name.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "description": "Name of the cache in the application's `CacheManager`.",
+          "type": "string"
+        },
+        "key": {
+          "description": "SpEL expression evaluated against the step input (`#input`). Defaults to the input itself.",
+          "type": "string"
+        }
+      }
+    },
+    "observability": {
+      "title": "Observability",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "description": "Whether use case and step observations are recorded. Unset inherits: a use case falls back to its group, a group to `enact.observability.enabled`, which defaults to `true`.",
+          "type": "boolean"
+        }
+      }
+    },
+    "restTrigger": {
+      "title": "REST trigger",
+      "description": "REST HTTP endpoint trigger, bound from `trigger.rest` and handled by `enact-starter-web`. By default, path variables and matching query parameters are bound to input properties of the same name and the JSON body to the input itself; `bind` declares anything else. `rest:` without a body takes every default.",
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "method": {
+          "description": "HTTP method.",
+          "type": "string",
+          "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"]
+        },
+        "path": {
+          "description": "URL path for the REST endpoint. May contain path variables, e.g. `/orders/{id}`.",
+          "type": "string"
+        },
+        "bind": {
+          "description": "Input property to request source: `header:<name>`, `query:<name>`, `path:<name>`, `attribute:<name>` (a request attribute, e.g. set by a filter), `body` or `body:<json-pointer>`, e.g. `tenantId: header:X-Tenant-Id`.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^(header:.+|query:.+|path:.+|attribute:.+|body(:.*)?)$"
+          }
+        },
+        "filters": {
+          "description": "Names of `HandlerFilterFunction` beans applied after the filters of the use case's group.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "produces": {
+          "description": "Media type the endpoint produces.",
+          "type": "string",
+          "default": "application/json"
+        },
+        "status": {
+          "description": "HTTP status code for successful responses.",
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 599,
+          "default": 200
+        }
+      }
+    },
+    "duration": {
+      "description": "A duration in the format Spring Boot accepts elsewhere in the configuration, e.g. `100ms`, `2s`, `PT1M`, or a plain number of milliseconds.",
+      "type": ["string", "integer"],
+      "pattern": "^([-+]?\\d+(ns|us|ms|s|m|h|d)?|[-+]?P.*)$"
+    }
+  }
+}

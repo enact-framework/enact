@@ -1,5 +1,0 @@
-enact:
-  use-cases:
-    createUser:
-      steps:
-        - step: saveUser

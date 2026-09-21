@@ -16,10 +16,15 @@ class TriggerActivatorTest {
 
         runner(handler)
             .withPropertyValues(
-                *useCase(
-                    "enact.use-cases.greet.trigger.queue.name=orders",
-                    "enact.use-cases.greet.trigger.queue.batch-size=10",
-                    "enact.use-cases.greet.trigger.queue.attributes.region=eu-west-1",
+                useCase(
+                    """
+                    trigger:
+                      queue:
+                        name: orders
+                        batch-size: 10
+                        attributes:
+                          region: eu-west-1
+                    """,
                 ),
             ).run { context ->
                 assertThat(context).hasNotFailed()
@@ -37,8 +42,15 @@ class TriggerActivatorTest {
         val handler = QueueTriggerHandler()
 
         runner(handler)
-            .withPropertyValues(*useCase("enact.use-cases.greet.trigger.queue.name=orders"))
-            .run { context ->
+            .withPropertyValues(
+                useCase(
+                    """
+                    trigger:
+                      queue:
+                        name: orders
+                    """,
+                ),
+            ).run { context ->
                 assertThat(context).hasNotFailed()
                 assertThat(handler.registrations.single().definition).isEqualTo(QueueTriggerDefinition("orders"))
             }
@@ -50,8 +62,21 @@ class TriggerActivatorTest {
 
         runner(handler)
             .withPropertyValues(
-                "enact.groups.audited.filters=logMessage,traceMessage",
-                *useCase("enact.use-cases.greet.group=audited", "enact.use-cases.greet.trigger.queue.name=orders"),
+                definitions(
+                    """
+                    use-cases:
+                      greet:
+                        group: audited
+                        steps:
+                          - step: greet
+                        trigger:
+                          queue:
+                            name: orders
+                    groups:
+                      audited:
+                        filters: [logMessage, traceMessage]
+                    """,
+                ),
             ).run { context ->
                 assertThat(handler.registrations.single().groupFilters).containsExactly("logMessage", "traceMessage")
             }
@@ -63,9 +88,23 @@ class TriggerActivatorTest {
 
         runner(handler)
             .withPropertyValues(
-                *useCase("enact.use-cases.greet.trigger.queue.name=orders"),
-                "enact.use-cases.welcome.steps[0].step=greet",
-                "enact.use-cases.welcome.trigger.queue.name=signups",
+                definitions(
+                    """
+                    use-cases:
+                      greet:
+                        steps:
+                          - step: greet
+                        trigger:
+                          queue:
+                            name: orders
+                      welcome:
+                        steps:
+                          - step: greet
+                        trigger:
+                          queue:
+                            name: signups
+                    """,
+                ),
             ).run { context ->
                 assertThat(handler.registeredWhenStarted).containsExactly("greet", "welcome")
                 assertThat(handler.stopped).isFalse()
@@ -78,7 +117,7 @@ class TriggerActivatorTest {
     fun `should not register a use case without trigger`() {
         val handler = QueueTriggerHandler()
 
-        runner(handler).withPropertyValues(*useCase()).run { context ->
+        runner(handler).withPropertyValues(useCase()).run { context ->
             assertThat(context).hasNotFailed()
             assertThat(handler.registrations).isEmpty()
             assertThat(handler.registeredWhenStarted).isEmpty()
@@ -88,8 +127,15 @@ class TriggerActivatorTest {
     @Test
     fun `should fail startup on unknown trigger type`() {
         runner(QueueTriggerHandler())
-            .withPropertyValues(*useCase("enact.use-cases.greet.trigger.carrierPigeon.name=orders"))
-            .run { context ->
+            .withPropertyValues(
+                useCase(
+                    """
+                    trigger:
+                      carrierPigeon:
+                        name: orders
+                    """,
+                ),
+            ).run { context ->
                 assertThat(context).hasFailed()
                 assertThat(context.startupFailure)
                     .hasStackTraceContaining("No trigger handler for 'carrierPigeon'")
@@ -101,9 +147,14 @@ class TriggerActivatorTest {
     fun `should fail startup when a use case declares several triggers`() {
         runner(QueueTriggerHandler())
             .withPropertyValues(
-                *useCase(
-                    "enact.use-cases.greet.trigger.queue.name=orders",
-                    "enact.use-cases.greet.trigger.rest.path=/greet",
+                useCase(
+                    """
+                    trigger:
+                      queue:
+                        name: orders
+                      rest:
+                        path: "/greet"
+                    """,
                 ),
             ).run { context ->
                 assertThat(context).hasFailed()
@@ -117,11 +168,14 @@ class TriggerActivatorTest {
             .withBean(Greeter::class.java)
             .withBean(QueueTriggerHandler::class.java, { handler })
 
-    private fun useCase(vararg extra: String) =
-        arrayOf(
-            "enact.use-cases.greet.steps[0].step=greet",
-            *extra,
+    /** A definition file declaring the `greet` use case, with [extra] YAML added under it. */
+    private fun useCase(extra: String = ""): String {
+        val block = extra.trimIndent().trim()
+        return definitions(
+            "use-cases:\n  greet:\n    steps:\n      - step: greet\n" +
+                if (block.isEmpty()) "" else block.prependIndent("    "),
         )
+    }
 
     data class QueueTriggerDefinition(
         val name: String = "",

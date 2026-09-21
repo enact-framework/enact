@@ -10,47 +10,14 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.context.annotation.Bean
 import org.springframework.http.MediaType
+import org.springframework.test.context.DynamicPropertyRegistry
+import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.delete
 import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.post
 
-@SpringBootTest(
-    classes = [RestTriggerHandlerTest.App::class],
-    properties = [
-        "enact.use-cases.createOrder.trigger.rest.method=POST",
-        "enact.use-cases.createOrder.trigger.rest.path=/orders/{customerId}",
-        "enact.use-cases.createOrder.trigger.rest.status=201",
-        "enact.use-cases.createOrder.steps[0].step=createOrder",
-        "enact.use-cases.findOrder.trigger.rest.method=GET",
-        "enact.use-cases.findOrder.trigger.rest.path=/orders/{id}",
-        "enact.use-cases.findOrder.steps[0].step=findOrder",
-        "enact.use-cases.ping.trigger.rest.method=GET",
-        "enact.use-cases.ping.trigger.rest.path=/ping",
-        "enact.use-cases.ping.steps[0].step=ping",
-        "enact.use-cases.purge.trigger.rest.method=DELETE",
-        "enact.use-cases.purge.trigger.rest.path=/orders",
-        "enact.use-cases.purge.trigger.rest.status=204",
-        "enact.use-cases.purge.steps[0].step=purge",
-        "enact.use-cases.placeOrder.trigger.rest.method=POST",
-        "enact.use-cases.placeOrder.trigger.rest.path=/customers/{customerId}/orders",
-        "enact.use-cases.placeOrder.trigger.rest.bind.tenantId=header:X-Tenant-Id",
-        "enact.use-cases.placeOrder.trigger.rest.bind.dryRun=query:dry-run",
-        "enact.use-cases.placeOrder.trigger.rest.bind.order=body",
-        "enact.use-cases.placeOrder.trigger.rest.bind.firstLine=body:/lines/0",
-        "enact.use-cases.placeOrder.steps[0].step=placeOrder",
-        "enact.use-cases.findItem.trigger.rest.method=GET",
-        "enact.use-cases.findItem.trigger.rest.path=/items/{id}",
-        "enact.use-cases.findItem.steps[0].step=findItem",
-        "enact.use-cases.echo.trigger.rest.method=POST",
-        "enact.use-cases.echo.trigger.rest.path=/echo",
-        "enact.use-cases.echo.steps[0].step=echo",
-        "enact.use-cases.findShipment.trigger.rest.method=GET",
-        "enact.use-cases.findShipment.trigger.rest.path=/shipments/{code}",
-        "enact.use-cases.findShipment.trigger.rest.bind.reference=path:code",
-        "enact.use-cases.findShipment.steps[0].step=findShipment",
-    ],
-)
+@SpringBootTest(classes = [RestTriggerHandlerTest.App::class])
 @AutoConfigureMockMvc
 class RestTriggerHandlerTest {
     @Autowired
@@ -292,5 +259,85 @@ class RestTriggerHandlerTest {
     class App {
         @Bean
         fun orderSteps() = OrderSteps()
+    }
+
+    companion object {
+        @JvmStatic
+        @DynamicPropertySource
+        fun enactDefinitions(registry: DynamicPropertyRegistry) {
+            val location =
+                definitionsFile(
+                    """
+                    use-cases:
+                      createOrder:
+                        steps:
+                          - step: createOrder
+                        trigger:
+                          rest:
+                            method: POST
+                            path: "/orders/{customerId}"
+                            status: 201
+                      findOrder:
+                        steps:
+                          - step: findOrder
+                        trigger:
+                          rest:
+                            method: GET
+                            path: "/orders/{id}"
+                      ping:
+                        steps:
+                          - step: ping
+                        trigger:
+                          rest:
+                            method: GET
+                            path: "/ping"
+                      purge:
+                        steps:
+                          - step: purge
+                        trigger:
+                          rest:
+                            method: DELETE
+                            path: "/orders"
+                            status: 204
+                      placeOrder:
+                        steps:
+                          - step: placeOrder
+                        trigger:
+                          rest:
+                            method: POST
+                            path: "/customers/{customerId}/orders"
+                            bind:
+                              tenantId: "header:X-Tenant-Id"
+                              dryRun: "query:dry-run"
+                              order: body
+                              firstLine: "body:/lines/0"
+                      findItem:
+                        steps:
+                          - step: findItem
+                        trigger:
+                          rest:
+                            method: GET
+                            path: "/items/{id}"
+                      echo:
+                        steps:
+                          - step: echo
+                        trigger:
+                          rest:
+                            method: POST
+                            path: "/echo"
+                      findShipment:
+                        steps:
+                          - step: findShipment
+                        trigger:
+                          rest:
+                            method: GET
+                            path: "/shipments/{code}"
+                            bind:
+                              reference: "path:code"
+                    """,
+                )
+
+            registry.add("enact.definitions") { location }
+        }
     }
 }

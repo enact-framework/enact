@@ -1,6 +1,6 @@
 # Steps
 
-A step is one unit of work in a use case. It takes a single input and returns a single output.
+A step is one unit of work in a use case. It takes its inputs and returns a single output.
 Every step has a unique name; use cases refer to steps by that name.
 
 ## Where steps live
@@ -42,9 +42,53 @@ Annotate a method of any Spring bean with `@Step`. The step name defaults to the
     }
     ```
 
-- The method must have **zero or one** parameter. A method with no parameter takes `Unit`, so it can only start a use case or follow a step that returns nothing.
+- A method with no parameter reads nothing, so a use case never binds anything to it.
 - A method returning nothing (`Unit` or `void`) produces `Unit`.
 - Exceptions thrown by the method reach the caller as they are.
+
+### Several parameters
+
+A method step may take several parameters. Each one is an input the use case binds by name, which is how two
+steps feed a third:
+
+=== "Kotlin"
+
+    ```kotlin
+    @StepDefinition
+    class InvoicingService {
+        @Step
+        fun buildInvoice(order: OrderEntity, price: Money): Invoice { /* ... */ }
+    }
+    ```
+
+=== "Java"
+
+    ```java
+    @StepDefinition
+    public class InvoicingService {
+        @Step
+        public Invoice buildInvoice(OrderEntity order, Money price) { /* ... */ }
+    }
+    ```
+
+```yaml
+- step: buildInvoice
+  in:
+    order: $saveOrder # (1)!
+    price: $applyDiscount
+```
+
+1.  The key is the parameter name, the value is the step whose output feeds it. See
+    [Binding inputs](use-cases.md#binding-inputs).
+
+Only a step written as an annotated method can take several inputs. A functional step and a `Step`
+implementation take one, so they stay usable wherever a single value is passed along.
+
+!!! warning "Parameter names must be readable"
+    Enact reads them with Spring's `DefaultParameterNameDiscoverer`: from kotlin-reflect for a Kotlin method,
+    from the class file for a method compiled with `-parameters` (`-java-parameters` for Kotlin). A
+    multi-parameter step whose names cannot be read fails at startup saying so; a step with a single parameter
+    is unaffected, since there is nothing to tell apart.
 
 ## Functional steps
 
@@ -112,7 +156,11 @@ A bean implementing `io.enact.core.step.Step` is registered under its `name`:
 
 `Step.In<I>` (no output) and `Step.Out<O>` (no input) are available for steps at the start or end of a use case.
 
+Its single input is named `input`, which is the name `in`, `when` and a cache `key` use for it.
+
 ## Rules
 
 - Step names must be unique. A duplicate fails startup.
 - A step referenced in YAML but not found fails startup with `Step '<name>' not found`.
+- A step declares its inputs; the use case decides where each of them comes from. See
+  [Use cases](use-cases.md).

@@ -9,6 +9,8 @@ description = "Spring Boot auto-configuration for Enact use cases defined in YAM
 dependencies {
     api(project(":enact-core"))
     implementation(libs.springBootAutoconfigure)
+    implementation(libs.jacksonYaml)
+    implementation(libs.jacksonKotlin)
     kapt(libs.springBootConfigurationProcessor)
 
     testImplementation(libs.springBootStarterTest)

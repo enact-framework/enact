@@ -1,5 +1,11 @@
 package io.enact.autoconfigure.configuration
 
+import io.enact.autoconfigure.definition.DefinitionReader
+import io.enact.autoconfigure.definition.Definitions
+import io.enact.autoconfigure.definition.UseCaseDefinition
+import io.enact.autoconfigure.definition.bindings
+import io.enact.autoconfigure.definition.definitionMapper
+import io.enact.autoconfigure.definition.fallback
 import io.enact.autoconfigure.properties.EnactProperties
 import io.enact.core.observation.EnactObservations
 import io.enact.core.observation.StepObservationConvention
@@ -7,6 +13,7 @@ import io.enact.core.observation.UseCaseObservationConvention
 import io.enact.core.step.Step
 import io.enact.core.step.StepRegistrar
 import io.enact.core.usecase.RuntimeUseCaseContainer
+import io.enact.core.usecase.StepNode
 import io.enact.core.usecase.UseCase
 import io.micrometer.observation.ObservationRegistry
 import org.springframework.beans.factory.BeanFactory
@@ -24,6 +31,8 @@ import org.springframework.context.EnvironmentAware
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.core.env.Environment
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+import org.springframework.core.task.AsyncTaskExecutor
 import org.springframework.util.ClassUtils
 import java.util.function.Supplier
 import io.enact.core.annotation.Step as StepAnnotation
@@ -36,20 +45,29 @@ open class DefinitionLoaderConfiguration :
     private lateinit var beanFactory: ConfigurableListableBeanFactory
     private lateinit var environment: Environment
     private var stepBeansInitialized = false
+    private val mapper = definitionMapper()
 
     override fun postProcessBeanDefinitionRegistry(registry: BeanDefinitionRegistry) {
         val properties =
             Binder
                 .get(environment)
                 .bind("enact", EnactProperties::class.java)
-                .orElse(null) ?: return
+                .orElseGet(::EnactProperties)
 
-        properties.useCases.forEach { (name, useCaseDefinition) ->
+        val resolver = PathMatchingResourcePatternResolver(beanFactory.beanClassLoader)
+        val definitions = DefinitionReader(resolver).read(properties.definitions)
+        registry.registerBeanDefinition(
+            DEFINITIONS_BEAN,
+            RootBeanDefinition(Definitions::class.java) { definitions },
+        )
+
+        definitions.useCases.forEach { (name, useCaseDefinition) ->
             val group = useCaseDefinition.group
-            require(group == null || group in properties.groups) {
-                "Use case '$name' references unknown group '$group'. Known: ${properties.groups.keys}"
+            require(group == null || group in definitions.groups) {
+                "Use case '$name'${definitions.sourceOf(name)} references unknown group '$group'. " +
+                    "Known: ${definitions.groups.keys}"
             }
-            val observed = observabilityEnabled(properties, useCaseDefinition)
+            val observed = observabilityEnabled(properties, definitions, useCaseDefinition)
             val beanDefinition =
                 RootBeanDefinition().apply {
                     setBeanClass(UseCase::class.java)
@@ -109,10 +127,11 @@ open class DefinitionLoaderConfiguration :
     /** A use case falls back to its group, a group to `enact.observability`, which defaults to enabled. */
     private fun observabilityEnabled(
         properties: EnactProperties,
-        definition: EnactProperties.UseCaseDefinition,
+        definitions: Definitions,
+        definition: UseCaseDefinition,
     ): Boolean =
         definition.observability?.enabled
-            ?: properties.groups[definition.group ?: DEFAULT_GROUP]?.observability?.enabled
+            ?: definitions.groups[definition.group ?: Definitions.DEFAULT_GROUP]?.observability?.enabled
             ?: properties.observability.enabled
             ?: true
 
@@ -134,25 +153,38 @@ open class DefinitionLoaderConfiguration :
 
     private fun createUseCase(
         name: String,
-        definition: EnactProperties.UseCaseDefinition,
+        definition: UseCaseDefinition,
         observed: Boolean,
     ): RuntimeUseCaseContainer<*, *> {
         val stepRegistrar = beanFactory.getBean<StepRegistrar>()
-        val steps = definition.steps.map { stepRegistrar.getStep(it.step) }
-        val stepSettings = definition.steps.zip(steps) { ref, step -> ref.settings?.orElse(step.settings) ?: step.settings }
+        val nodes =
+            definition.steps.map { reference ->
+                val step = stepRegistrar.getStep(reference.step)
+                StepNode(
+                    id = reference.id ?: reference.step,
+                    step = step,
+                    bindings = reference.bindings(name, step),
+                    condition = reference.condition,
+                    fallback = reference.fallback(name, step, mapper),
+                    side = reference.side,
+                    settings = reference.settings?.orElse(step.settings) ?: step.settings,
+                )
+            }
 
         return RuntimeUseCaseContainer<Any, Any>(
             name,
             definition.description ?: "<no description>",
-            steps,
-            stepSettings,
+            nodes,
+            definition.output,
             beanFactory.getBeanProvider<CacheManager>().ifAvailable,
             definition.group,
             observations(observed),
+            definition.concurrent,
+            beanFactory.getBeanProvider<AsyncTaskExecutor>().ifAvailable,
         )
     }
 
     private companion object {
-        const val DEFAULT_GROUP = "default"
+        const val DEFINITIONS_BEAN = "enactDefinitions"
     }
 }

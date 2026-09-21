@@ -4,6 +4,7 @@ import io.enact.core.annotation.Cached
 import io.enact.core.annotation.Step
 import io.enact.core.annotation.StepDefinition
 import io.enact.demo.order.model.OrderEntity
+import io.enact.demo.order.transfer.ConfirmOrderCommand
 import io.enact.demo.order.transfer.OrderRequest
 import io.enact.demo.order.transfer.OrderSearch
 import io.enact.demo.order.transfer.UpdateOrderCommand
@@ -32,6 +33,10 @@ class OrderPersistingService(
 
     @Step(cache = Cached(name = "orders"))
     fun findOrder(id: UUID): OrderEntity = requireNotNull(orders[id]) { "Order $id not found." }
+
+    /** Same lookup as findOrder, reading the id out of the confirmOrder input. */
+    @Step
+    fun loadOrder(command: ConfirmOrderCommand): OrderEntity = requireNotNull(orders[command.id]) { "Order ${command.id} not found." }
 
     @Step
     fun searchOrders(search: OrderSearch): List<OrderEntity> = orders.values.filter { it.amount >= search.minAmount }.take(search.limit)

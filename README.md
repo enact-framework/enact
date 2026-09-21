@@ -3,14 +3,19 @@
 Build Spring Boot applications around **use cases** defined in YAML.
 
 Write small steps as ordinary Spring beans, wire them into use cases in a YAML file per domain, and let Enact
-validate the chain at startup, register each use case as an injectable bean, and expose it over HTTP.
+check every connection at startup, register each use case as an injectable bean, and expose it over HTTP.
+
+A use case is a graph, not a list: a step says where its inputs come from, so steps can fan out, fan in, run
+only under a condition, run at once, or run aside. Every edge is type-checked before the application starts.
 
 ```kotlin
 @StepDefinition
 class OrderService {
     @Step fun validateOrder(request: OrderRequest): OrderRequest = request.also { require(it.amount > 0) }
     @Step fun saveOrder(request: OrderRequest): OrderEntity = TODO("persist")
-    @Step fun toResponse(order: OrderEntity): OrderResponse = OrderResponse(order.id)
+    @Step fun priceOrder(request: OrderRequest): Money = TODO("price")
+    @Step fun toResponse(order: OrderEntity, price: Money): OrderResponse = OrderResponse(order.id, price)
+    @Step fun notifyOps(response: OrderResponse) = TODO("send")
 }
 ```
 
@@ -18,18 +23,24 @@ class OrderService {
 # src/main/resources/enact/orders.yaml
 use-cases:
   createOrder:
+    concurrent: true            # steps that do not read each other run at once
     trigger:
       rest:
         method: POST
         path: /api/v1/orders
         status: 201
     steps:
-      - step: validateOrder
+      - step: validateOrder     # reads the use case's input
       - step: saveOrder
         settings:
           retry:
             max-retries: 3
-      - step: toResponse
+      - step: priceOrder
+        in: $validateOrder      # reaches back, so it runs alongside saveOrder
+      - step: toResponse        # two inputs, bound by parameter name
+        in: { order: $saveOrder, price: $priceOrder }
+      - step: notifyOps
+        side: true              # started, never waited for
 ```
 
 > **Status:** `0.0.1-alpha`, an early preview. APIs may change before 1.0.
