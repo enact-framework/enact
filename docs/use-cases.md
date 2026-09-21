@@ -222,7 +222,13 @@ caller unchanged, with the others attached as suppressed.
 
 Nothing may read a step that runs aside; binding to one fails at startup. Its failure cannot reach the caller
 either, so it is logged and recorded as an error on the `enact.step`
-[observation](observability.md).
+[observation](observability.md). `retry` settings still apply, so a step run aside retries on its own thread
+before that happens.
+
+!!! warning "A step run aside is not guaranteed to finish"
+    Nothing waits for it, the application shutting down included: a step still running then may be cut short.
+    Use it for work that may be lost, such as a notification, and not for work that must happen. Something
+    that must happen belongs in the use case, or behind a queue that can redeliver it.
 
 ## Errors
 
