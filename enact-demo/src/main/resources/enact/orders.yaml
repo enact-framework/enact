@@ -55,6 +55,36 @@ use-cases:
       - step: updateOrder
       - step: mapOrderResponse
 
+  # A graph rather than a chain. `$input` is read twice, two edges meet in one step, one step is conditional
+  # and one runs aside:
+  #
+  #   $input ┬─> loadOrder ───────┐
+  #          └─> estimateShipping ┴─> quoteConfirmation ─> applyBulkDiscount ─> returned
+  #                                                                         └─> notifyWarehouse (aside)
+  confirmOrder:
+    description: Quotes shipping for an order and discounts bulk purchases
+    concurrent: true                  # loadOrder and estimateShipping read nothing of each other, so they run at once
+    trigger:
+      rest:
+        method: POST
+        path: /api/v1/orders/{id}/confirmation
+    steps:
+      - step: loadOrder
+        in: $input                    # `id` binds from the path, `country` from a query parameter of the same name
+      - step: estimateShipping
+        in: $input                    # reads the use case input too, not the step declared above
+      - step: quoteConfirmation
+        in:                           # a step taking several parameters binds each of them by name
+          order: $loadOrder
+          shipping: $estimateShipping
+      - step: applyBulkDiscount       # no `in`: a single parameter reads the step declared above
+        when: "#confirmation.total >= 100"   # SpEL over the step's own inputs, named after its parameters
+        else: $confirmation           # what the step yields when the condition does not hold
+      - step: notifyWarehouse
+        in: $applyBulkDiscount
+        side: true                    # off the caller's thread, never waited for, and nothing may read it
+      # applyBulkDiscount is returned: feeding a step that runs aside does not count as being read
+
   cancelOrder:
     description: Cancels an existing order
     trigger:

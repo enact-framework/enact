@@ -68,7 +68,28 @@ Cache uses Spring's cache abstraction, so any `CacheManager` works (Caffeine, Re
 | Property | Required | Description |
 |---|---|---|
 | `name` | yes | Cache name in the application's `CacheManager` |
-| `key` | no | SpEL expression evaluated against the step input, available as `#input`. Defaults to the input itself (it then needs proper `equals`/`hashCode`). |
+| `key` | no | SpEL expression over the step's inputs. Defaults to the inputs themselves (which then need proper `equals`/`hashCode`). |
+
+Each input is readable by its parameter name, and `#input` names the only one of a step taking a single
+parameter:
+
+```yaml
+- step: saveOrder
+  settings:
+    cache: { name: orders, key: "#input.id" } # (1)!
+
+- step: quoteShipping
+  in: { order: $saveOrder, country: $input }
+  settings:
+    cache: { name: quotes, key: "#order.weight + '-' + #country" } # (2)!
+```
+
+1.  `saveOrder(request: OrderRequest)` takes one parameter, so `#input` is that request.
+2.  `quoteShipping(order: OrderEntity, country: String)` takes two, so each is named. `#input` does not exist
+    here.
+
+Without a `key`, a step taking one input is keyed by it, and a step taking several by all of its arguments
+together.
 
 Cache can also be declared on the step itself. YAML settings take precedence:
 

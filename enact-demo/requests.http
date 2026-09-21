@@ -32,6 +32,12 @@ Content-Type: application/json
     "productCount": 3
 }
 
+### Confirm an order (two steps read the input at once, one step takes both their outputs; replace the id)
+POST localhost:8080/api/v1/orders/00000000-0000-0000-0000-000000000000/confirmation?country=FR
+
+### Confirm an order above 100 (the `when` holds, so applyBulkDiscount runs; replace the id)
+POST localhost:8080/api/v1/orders/00000000-0000-0000-0000-000000000000/confirmation?country=DE
+
 ### Cancel an order (replace the id)
 DELETE localhost:8080/api/v1/orders/00000000-0000-0000-0000-000000000000
 

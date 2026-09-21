@@ -181,33 +181,33 @@ Cross-cutting concerns such as authentication, tenant checks or auditing are han
 `HandlerFilterFunction` beans that wrap the endpoint. Use cases belong to a `group`, and each group lists the
 filters applied to its endpoints:
 
-```yaml
-enact:
-  groups:
-    default: # (1)!
-      filters: [bearerAuth]
-    admin:
-      filters: [bearerAuth, requireAdmin] # (2)!
-    public:
-      filters: []
-  use-cases:
-    createOrder: # (3)!
-      trigger:
-        rest: { method: POST, path: /api/v1/orders }
-      steps: [...]
-    cancelOrder:
-      group: admin
-      trigger:
-        rest:
-          method: DELETE
-          path: /api/v1/orders/{id}
-          filters: [audit] # (4)!
-          bind:
-            cancelledBy: attribute:userId # (5)!
-      steps: [...]
-    generateId:
-      group: public
-      ...
+```yaml title="src/main/resources/enact/orders.yaml"
+groups:
+  default: # (1)!
+    filters: [bearerAuth]
+  admin:
+    filters: [bearerAuth, requireAdmin] # (2)!
+  public:
+    filters: []
+
+use-cases:
+  createOrder: # (3)!
+    trigger:
+      rest: { method: POST, path: /api/v1/orders }
+    steps: [...]
+  cancelOrder:
+    group: admin
+    trigger:
+      rest:
+        method: DELETE
+        path: /api/v1/orders/{id}
+        filters: [audit] # (4)!
+        bind:
+          cancelledBy: attribute:userId # (5)!
+    steps: [...]
+  generateId:
+    group: public
+    ...
 ```
 
 1.  Applies to every use case without a `group`. Without a `default` group, such use cases have no filters.

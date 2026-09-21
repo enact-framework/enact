@@ -155,10 +155,9 @@ reports your trigger type as an unresolved property, although the application st
 Cannot resolve property 'queue' in io.enact.core.trigger.TriggerProperties
 ```
 
-Configuration metadata (`additional-spring-configuration-metadata.json`) does not help here: below a map entry
-such as `enact.use-cases.createOrder`, metadata keys are ignored. Suppress the inspection, or, if Enact should
-ship the trigger, add it to `TriggerProperties` in a pull request. In a definition file the IDE says nothing at
-all, since it does not read them as configuration.
+Suppress the inspection, or, if Enact should ship the trigger, add it to `TriggerProperties` in a pull request.
+In a definition file an IDE says nothing at all, since definition files are not configuration properties: they
+are read by Enact itself.
 
 ## Lifecycle
 
@@ -173,7 +172,7 @@ An exception from `register` or `start` stops the application from starting.
 
 ## Group filters
 
-`enact.groups` is not tied to one trigger type: a group is a list of bean names, and each trigger resolves them
+A group is not tied to one trigger type: a group is a list of bean names, and each trigger resolves them
 to its own kind of filter. REST reads them as `HandlerFilterFunction` beans, a queue trigger can read them as its
 own interceptor type. They arrive on the registration, outermost first, with the `default` group applied to use
 cases without a group:

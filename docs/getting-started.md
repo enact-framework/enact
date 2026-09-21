@@ -54,7 +54,7 @@ If you only need injectable use cases (no HTTP endpoints), use `io.github.enact-
 
 ## 2. Write steps
 
-A step is a method annotated with `@Step` that takes zero or one argument:
+A step is a method annotated with `@Step`. Its parameters are the inputs the use case will bind:
 
 === "Kotlin"
 
@@ -132,9 +132,11 @@ use-cases:
 ```
 
 1.  Exposes the use case as `POST /api/v1/orders`. Leave `trigger` out to use it only through injection.
-2.  Steps are referenced by name. `OrderRequest → OrderRequest → OrderEntity → OrderResponse` is checked at startup.
+2.  Steps are referenced by name, and a step that binds nothing reads the one declared before it.
+    `OrderRequest → OrderRequest → OrderEntity → OrderResponse` is checked at startup.
 
-Enact reads every file of that folder. See [Definition files](definition-files.md) to keep them elsewhere.
+Enact reads every file of that folder. See [Definition files](definition-files.md) to keep them elsewhere, and
+[Use cases](use-cases.md) to branch, join, skip or run steps at once instead of passing one value along.
 
 ## 4. Run it
 

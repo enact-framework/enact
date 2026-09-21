@@ -79,26 +79,30 @@ management:
 Observability is on by default. It can be turned off globally, for a group, or for a single use case. The
 narrower setting wins: a use case falls back to its group, and a group to `enact.observability`.
 
-```yaml
+```yaml title="application.yaml"
 enact:
   observability:
     enabled: true            # global default
-  groups:
-    internal:
-      observability:
-        enabled: false       # nothing in this group is measured
-  use-cases:
-    healthPing:
-      observability:
-        enabled: false       # this one is not measured
-      steps:
-        - step: ping
-    auditExport:
-      group: internal
-      observability:
-        enabled: true        # but this one is, despite its group
-      steps:
-        - step: exportAudit
+```
+
+```yaml title="src/main/resources/enact/system.yaml"
+groups:
+  internal:
+    observability:
+      enabled: false         # nothing in this group is measured
+
+use-cases:
+  healthPing:
+    observability:
+      enabled: false         # this one is not measured
+    steps:
+      - step: ping
+  auditExport:
+    group: internal
+    observability:
+      enabled: true          # but this one is, despite its group
+    steps:
+      - step: exportAudit
 ```
 
 This is resolved once at startup. A use case that is turned off is built with `ObservationRegistry.NOOP`, so

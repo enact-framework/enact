@@ -13,7 +13,7 @@ use-cases:
         path: /api/v1/orders
         status: 201
     steps:
-      - step: validateOrderCreation
+      - step: validateOrder
       - step: saveOrder
       - step: mapOrderResponse
 ```
@@ -23,6 +23,11 @@ use-cases:
 
 Nothing else is needed: `classpath:enact/` is where Enact looks by default. `application.yaml` keeps the
 settings of the application, and the use cases stay next to the domain they describe.
+
+!!! warning "Use cases cannot be written in `application.yaml`"
+    `enact.use-cases` and `enact.groups` are no longer read. A definition file is the one place a use case is
+    declared. What remains in `application.yaml` is Enact's own configuration: `enact.enabled`,
+    `enact.definitions` and `enact.observability`.
 
 ## One file per domain
 
@@ -65,8 +70,8 @@ The default location is optional, so an application without definition files sta
 
 ## Groups next to their use cases
 
-A [group](http-trigger.md#filters-and-groups) shared by the whole application belongs in `application.yaml`. A group that one
-domain uses can be written in its file instead:
+A [group](http-trigger.md#filters-and-groups) shared by the whole application belongs in a file of its own. A
+group that one domain uses can be written in that domain's file instead:
 
 ```yaml title="src/main/resources/enact/orders.yaml"
 use-cases:
@@ -80,41 +85,70 @@ groups:
     filters: [requestLog, requireUser]
 ```
 
+A use case name is a bean name and a group name is not, so the two never collide: a use case and a group may
+share a name.
+
+## How they are read
+
+Definition files are parsed with Jackson, not bound as Spring configuration properties. That is what makes a
+name mean exactly what the file says: a configuration property name is lower-cased, while a use case name, a
+step id, a `bind` entry and a parameter name in `in` are all case-sensitive.
+
+Keys are kebab-case, as elsewhere in Spring Boot (`use-cases`, `max-retries`), and durations take the forms
+Spring Boot accepts (`100ms`, `2s`, `PT1M`). An unknown key is rejected rather than ignored, so a typo fails
+the application instead of quietly doing nothing.
+
 ## What Enact checks
 
 At startup, before anything runs:
 
 - a file declares `use-cases` and `groups`, and nothing else,
-- a use case name is declared once, in one file or in `application.yaml`,
-- a group is declared in one place, either a file or `application.yaml`, and
+- every key below them is one a definition knows,
+- a use case name is declared once across every file, and a group name likewise, and
 - every location matches at least one YAML file, unless it is `optional:`.
 
-An error names the file and the line it comes from:
+An error names the file it comes from, and a key that could not be read carries the line it is on:
 
 ```text
-Use case 'createOrder' is declared twice: class path resource [enact/orders.yaml] - 2:3
-and class path resource [enact/legacy.yaml] - 7:3.
+Cannot read use case definitions from class path resource [enact/orders.yaml]:
+Unrecognized field "stepz" ... at line 4, column 9.
 ```
 
-!!! note "Editor support"
-    An IDE completes `enact.*` keys in `application.yaml`, where it reads Spring configuration metadata. A
-    definition file is a plain YAML file to it, so it neither completes nor checks the keys written there.
-
-## Use cases in application.yaml
-
-Use cases can still be written under `enact.use-cases` in `application.yaml`, which is short enough for a test
-or a small application:
-
-```yaml title="application.yaml"
-enact:
-  use-cases:
-    generateId:
-      steps:
-        - step: generateRandomUUID
+```text
+Use case 'createOrder' is declared twice: class path resource [enact/orders.yaml]
+and class path resource [enact/legacy.yaml].
 ```
 
-The files and `application.yaml` are read together. Because use cases are keyed by name, Spring merges them
-like any other map, and a name declared in both places is an error rather than one of them quietly winning.
+A file that starts at `enact:` fails the same way, since `enact` is a root key like any other. The error then
+says that a definition file declares `use-cases` and `groups` at its root, without the prefix.
+
+Once the files are read, the use cases themselves are checked; see [Validation](use-cases.md#validation).
+
+## Editor support
+
+An IDE completes `enact.*` keys in `application.yaml`, where it reads Spring configuration metadata. A
+definition file is a plain YAML file to it, so nothing completes or checks the keys written there unless you
+point the editor at Enact's JSON schema:
+
+```
+https://enact-framework.github.io/enact/schema/definition-file.schema.json
+```
+
+In IntelliJ, add it under *Settings → Languages & Frameworks → Schemas and DTDs → JSON Schema Mappings* for
+the `enact/` folder. In VS Code, map it under `yaml.schemas`:
+
+```json title=".vscode/settings.json"
+{
+  "yaml.schemas": {
+    "https://enact-framework.github.io/enact/schema/definition-file.schema.json": "src/main/resources/enact/*.yaml"
+  }
+}
+```
+
+!!! note "The schema checks shape, not meaning"
+    It catches a misspelled key, a value of the wrong kind and a missing `step`. Whether a step exists,
+    whether the types along an edge fit and whether the graph has exactly one output are questions about your
+    code, so Enact answers them at startup. See [Validation](use-cases.md#validation).
 
 !!! note "`spring.config.import` reads Spring configuration, not definition files"
     A definition file starts at `use-cases`, not at `enact:`, so importing one as configuration puts its keys
