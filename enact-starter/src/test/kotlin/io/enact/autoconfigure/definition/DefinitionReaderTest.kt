@@ -105,6 +105,36 @@ class DefinitionReaderTest {
     }
 
     @Test
+    fun `should read every document of a file`() {
+        write(
+            "orders.yaml",
+            """
+            use-cases:
+              first:
+                steps:
+                  - step: one
+            ---
+            use-cases:
+              second:
+                steps:
+                  - step: two
+            """,
+        )
+
+        assertThat(reader.read(listOf(folder())).useCases).containsOnlyKeys("first", "second")
+    }
+
+    @Test
+    fun `should accept a section written without entries`() {
+        write("orders.yaml", "use-cases:\ngroups:")
+
+        val definitions = reader.read(listOf(folder()))
+
+        assertThat(definitions.useCases).isEmpty()
+        assertThat(definitions.groups).isEmpty()
+    }
+
+    @Test
     fun `should reject a root key that is not a definition`() {
         write("orders.yaml", "server:\n  port: 8080")
 

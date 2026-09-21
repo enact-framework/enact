@@ -34,15 +34,16 @@ class DefinitionReader(
             .distinctBy(::identity)
             .forEach { file ->
                 val where = file.description
-                val document = parse(file)
 
-                document.useCases.forEach { (name, useCase) ->
-                    declare(name, "Use case", useCaseSources, where)
-                    useCases[name] = useCase
-                }
-                document.groups.forEach { (name, group) ->
-                    declare(name, "Group", groupSources, where)
-                    groups[name] = group
+                parse(file).forEach { document ->
+                    document.useCases.orEmpty().forEach { (name, useCase) ->
+                        declare(name, "Use case", useCaseSources, where)
+                        useCases[name] = useCase
+                    }
+                    document.groups.orEmpty().forEach { (name, group) ->
+                        declare(name, "Group", groupSources, where)
+                        groups[name] = group
+                    }
                 }
             }
 
@@ -60,9 +61,15 @@ class DefinitionReader(
         sources[name] = where
     }
 
-    private fun parse(file: Resource): DefinitionDocument =
+    /** A file may hold several YAML documents, separated by `---`; each declares definitions of its own. */
+    private fun parse(file: Resource): List<DefinitionDocument> =
         try {
-            file.inputStream.use { mapper.readValue(it, DefinitionDocument::class.java) }
+            file.inputStream.use { stream ->
+                mapper
+                    .readerFor(DefinitionDocument::class.java)
+                    .readValues<DefinitionDocument>(stream)
+                    .readAll()
+            }
         } catch (exception: JacksonException) {
             val at = exception.location?.let { " at line ${it.lineNr}, column ${it.columnNr}" }.orEmpty()
             // Only a failure on the document itself is a stray root key; a nested one already names its class.
@@ -107,10 +114,14 @@ class DefinitionReader(
 
     private fun identity(file: Resource): String = runCatching { file.uri.toString() }.getOrDefault(file.description)
 
-    /** Root of a definition file. Only these two keys, so that a stray one is reported instead of ignored. */
+    /**
+     * Root of a definition file. Only these two keys, so that a stray one is reported instead of ignored.
+     * Both are nullable: a section written without entries under it reads as null, and declaring nothing is
+     * not an error.
+     */
     private data class DefinitionDocument(
-        val useCases: Map<String, UseCaseDefinition> = emptyMap(),
-        val groups: Map<String, GroupDefinition> = emptyMap(),
+        val useCases: Map<String, UseCaseDefinition>? = null,
+        val groups: Map<String, GroupDefinition>? = null,
     )
 
     private companion object {
