@@ -8,8 +8,10 @@ import io.enact.core.trigger.TriggerRegistration
 import io.enact.core.usecase.UseCase
 import org.springframework.beans.factory.DisposableBean
 import org.springframework.beans.factory.SmartInitializingSingleton
+import org.springframework.boot.context.properties.bind.BindHandler
 import org.springframework.boot.context.properties.bind.Bindable
 import org.springframework.boot.context.properties.bind.Binder
+import org.springframework.boot.context.properties.source.ConfigurationPropertyName
 import org.springframework.context.ApplicationContext
 import org.springframework.core.env.Environment
 
@@ -18,7 +20,7 @@ import org.springframework.core.env.Environment
  *
  * Trigger types are read from the configuration itself rather than from
  * [TriggerProperties][io.enact.core.trigger.TriggerProperties], which only names the types Enact ships so that
- * editors can complete them. The definition is then bound from `enact.use-cases[i].trigger.<type>` to the
+ * editors can complete them. The definition is then bound from `enact.use-cases.<name>.trigger.<type>` to the
  * handler's [TriggerHandler.definitionType], so a new trigger type needs no change here.
  */
 class TriggerActivator(
@@ -31,32 +33,40 @@ class TriggerActivator(
     private val startedHandlers = mutableListOf<TriggerHandler<*>>()
 
     override fun afterSingletonsInstantiated() {
-        properties.useCases.forEachIndexed { index, definition ->
-            val types = triggerTypes(index)
-            if (types.isEmpty()) return@forEachIndexed
+        properties.useCases.forEach { (name, definition) ->
+            val trigger = triggerOf(name)
+            val types = triggerTypes(trigger)
+            if (types.isEmpty()) return@forEach
             require(types.size == 1) {
-                "Use case '${definition.name}' must declare exactly one trigger, but declares $types. " +
+                "Use case '$name' must declare exactly one trigger, but declares $types. " +
                     "Available trigger types: ${registry.types}"
             }
 
             val type = types.single()
             val handler = registry.getHandler(type)
-            register(handler, type, index, definition)
+            register(handler, ConfigurationPropertyName.adapt("$trigger.$type", '.'), name, definition)
             if (handler !in startedHandlers) startedHandlers.add(handler)
         }
 
         startedHandlers.forEach { it.start() }
     }
 
-    /** Trigger types declared by the use case at [index], whether or not [TriggerProperties] names them. */
-    private fun triggerTypes(index: Int): Set<String> {
-        val trigger: Map<String, Any>? =
+    /**
+     * The trigger of the use case, as a property name. It is adapted rather than parsed, because a use case
+     * name is a bean name such as `createOrder`, which a configuration property name holds in lower case.
+     */
+    private fun triggerOf(useCase: String): ConfigurationPropertyName =
+        ConfigurationPropertyName.adapt("enact.use-cases.$useCase.trigger", '.')
+
+    /** Trigger types declared by the use case, whether or not [TriggerProperties] names them. */
+    private fun triggerTypes(trigger: ConfigurationPropertyName): Set<String> {
+        val types: Map<String, Any>? =
             Binder
                 .get(environment)
-                .bind("enact.use-cases[$index].trigger", Bindable.mapOf(String::class.java, Any::class.java))
+                .bind(trigger, Bindable.mapOf(String::class.java, Any::class.java))
                 .orElse(null)
 
-        return trigger?.keys.orEmpty()
+        return types?.keys.orEmpty()
     }
 
     override fun destroy() = startedHandlers.asReversed().forEach { it.stop() }
@@ -64,16 +74,19 @@ class TriggerActivator(
     @Suppress("UNCHECKED_CAST")
     private fun register(
         handler: TriggerHandler<*>,
-        type: String,
-        index: Int,
-        definition: EnactProperties.UseCaseDefinition,
+        definition: ConfigurationPropertyName,
+        name: String,
+        useCase: EnactProperties.UseCaseDefinition,
     ) {
-        val group = properties.groups[definition.group ?: DEFAULT_GROUP]
+        val group = properties.groups[useCase.group ?: DEFAULT_GROUP]
         val registration =
             TriggerRegistration(
-                useCaseName = definition.name,
-                useCase = applicationContext.getBean(definition.name) as UseCase<Any, Any>,
-                definition = Binder.get(environment).bindOrCreate("enact.use-cases[$index].trigger.$type", handler.definitionType),
+                useCaseName = name,
+                useCase = applicationContext.getBean(name) as UseCase<Any, Any>,
+                definition =
+                    Binder
+                        .get(environment)
+                        .bindOrCreate(definition, Bindable.of(handler.definitionType), BindHandler.DEFAULT),
                 groupFilters = group?.filters.orEmpty(),
             )
 

@@ -1,0 +1,5 @@
+use-cases:
+  greet:
+    description: Greets someone by name
+    steps:
+      - step: greet

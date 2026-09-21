@@ -3,7 +3,7 @@
 With `enact-starter-web` on the classpath, a use case can be exposed as a Spring MVC endpoint:
 
 ```yaml
-- name: findOrder
+findOrder:
   trigger:
     rest:
       method: GET # (1)!
@@ -63,7 +63,7 @@ A search endpoint needs no body at all: `GET /api/v1/orders?minAmount=10&limit=5
 `bind` maps input properties to request sources:
 
 ```yaml
-- name: updateOrder
+updateOrder:
   trigger:
     rest:
       method: PUT
@@ -191,11 +191,11 @@ enact:
     public:
       filters: []
   use-cases:
-    - name: createOrder # (3)!
+    createOrder: # (3)!
       trigger:
         rest: { method: POST, path: /api/v1/orders }
       steps: [...]
-    - name: cancelOrder
+    cancelOrder:
       group: admin
       trigger:
         rest:
@@ -205,7 +205,7 @@ enact:
           bind:
             cancelledBy: attribute:userId # (5)!
       steps: [...]
-    - name: generateId
+    generateId:
       group: public
       ...
 ```

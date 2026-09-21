@@ -1,0 +1,71 @@
+# Use cases of the order domain. Picked up from `classpath:enact/`, see application.yaml.
+use-cases:
+  # The JSON body becomes the input (OrderRequest), no binding config needed
+  createOrder:
+    description: Validates and stores a new order
+    trigger:
+      rest:
+        method: POST
+        path: /api/v1/orders
+        status: 201
+    steps:
+      - step: validateOrderCreation
+      - step: saveOrder
+        settings:
+          retry:
+            max-retries: 3
+            delay: 100ms
+      - step: mapOrderResponse
+
+  # Query parameters bind to OrderSearch properties of the same name: ?minAmount=10&limit=5
+  searchOrders:
+    description: Lists orders above a minimum amount
+    trigger:
+      rest:
+        method: GET
+        path: /api/v1/orders
+    steps:
+      - step: searchOrders
+      - step: mapOrderResponses
+
+  # A single path variable binds straight to a scalar input: findOrder(id: UUID)
+  findOrder:
+    description: Looks up an order by id (cached)
+    trigger:
+      rest:
+        method: GET
+        path: /api/v1/orders/{id}
+    steps:
+      - step: findOrder       # cached via @Step(cache = Cached(...))
+      - step: mapOrderResponse
+
+  # `id` comes from the path by name; everything else is declared in `bind`
+  updateOrder:
+    description: Replaces an order's amount and product count
+    group: authenticated
+    trigger:
+      rest:
+        method: PUT
+        path: /api/v1/orders/{id}
+        filters: [auditUpdate]        # runs after the group's filters
+        bind:
+          updatedBy: attribute:userId   # set by the requireUser filter
+          changes: body
+    steps:
+      - step: updateOrder
+      - step: mapOrderResponse
+
+  cancelOrder:
+    description: Cancels an existing order
+    trigger:
+      rest:
+        method: DELETE
+        path: /api/v1/orders/{id}
+        status: 204
+    steps:
+      - step: cancelOrder
+
+# A group used by this domain only can live next to it
+groups:
+  authenticated:                # filters run in order: requestLog, then requireUser
+    filters: [requestLog, requireUser]

@@ -9,7 +9,7 @@ Enact follows a use-case-oriented approach: developers define steps as Spring be
 ## Architecture
 
 - **`enact-core`** — `@Step` annotation, `Step`/`UseCase` model, step discovery (`StepDiscoveryBeanPostProcessor`), validation, execution with retry/cache (`RuntimeUseCaseContainer`, `StepInvoker`), trigger SPI (`TriggerHandler`, `TriggerRegistration`), Micrometer observations (`io.enact.core.observation`)
-- **`enact-starter`** — Spring Boot auto-configuration: binds `enact.*` properties, registers use case beans (`DefinitionLoaderConfiguration`), generic-aware injection (`UseCaseAutowireCandidateResolver`), trigger activation
+- **`enact-starter`** — Spring Boot auto-configuration: binds `enact.*` properties, reads definition files (`DefinitionFileLoader`, `DefinitionFileEnvironmentPostProcessor`), registers use case beans (`DefinitionLoaderConfiguration`), generic-aware injection (`UseCaseAutowireCandidateResolver`), trigger activation
 - **`enact-starter-web`** — REST trigger (`RestTriggerHandler`) built on Spring MVC functional routes
 - **`enact-demo`** — runnable sample app (not published)
 
@@ -20,10 +20,24 @@ Enact follows a use-case-oriented approach: developers define steps as Spring be
 - `@Step` on a class implementing `Function`/`Supplier`/`Consumer`/`Predicate`/Kotlin function type — name defaults to the bean name
 - Beans implementing `io.enact.core.step.Step` — registered under `name`
 
+## Definition files
+
+Use cases live in YAML files, read from `classpath:enact/` by default and listed under `enact.definitions`
+(a file, a directory or an Ant pattern; `optional:` for a location that may be missing). A file declares
+`use-cases` and `groups` at its root, without the `enact:` prefix. `DefinitionFileEnvironmentPostProcessor`
+(registered in `META-INF/spring.factories`) moves those keys under `enact` into one `enactDefinitions`
+property source, added behind the application configuration. Both are maps keyed by name, and Spring merges a
+map across property sources, so files and `application.yaml` add up on their own; `DefinitionFileLoader` only
+keeps keys as written (a property name lower-cases map keys) and reports a name declared twice, which Spring
+would otherwise merge. Values keep their origin, so errors name the file and line. See
+`docs/definition-files.md`.
+
 ## YAML Schema
 
 ```yaml
+# application.yaml; a definition file holds `use-cases` and `groups` only, without the `enact:` prefix
 enact:
+  definitions: [classpath:enact/]  # optional; where the definition files are
   enabled: true
   observability:
     enabled: true                # optional; metrics and traces, on by default
@@ -35,7 +49,7 @@ enact:
       observability:
         enabled: false           # optional; overrides the global setting for this group
   use-cases:
-    - name: createOrder          # use case bean name
+    createOrder:               # key = use case name = bean name
       description: ...
       group: admin               # optional; defaults to `default`
       observability:
@@ -71,6 +85,7 @@ enact:
 5. REST `bind` keys must be input properties, `path:` sources must exist in the path, and every path variable must bind to a property
 6. A use case `group` must be declared in `enact.groups`, and every filter name must be a bean of the kind the trigger expects (`HandlerFilterFunction` for REST)
 7. A use case declares at most one trigger, whose type must have a registered `TriggerHandler`
+8. A use case name and a group name are declared once across the definition files and `application.yaml`; a location matches at least one YAML file unless it is `optional:`; a definition file declares nothing but `use-cases` and `groups`
 
 ## Observability
 

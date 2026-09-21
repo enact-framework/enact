@@ -11,8 +11,15 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 data class EnactProperties(
     /** Whether Enact auto-configuration is enabled. */
     val enabled: Boolean = true,
-    /** List of use case definitions. */
-    val useCases: List<UseCaseDefinition> = emptyList(),
+    /**
+     * Where the definition files are, as a file, a directory or an Ant pattern, for example
+     * `classpath:enact/orders.yaml`. A location may start with `optional:` when it may be missing. Read by
+     * [io.enact.autoconfigure.definition.DefinitionFileLoader] before the application starts, which is why
+     * nothing reads it here. The default declared here is the one the loader falls back to.
+     */
+    val definitions: List<String> = listOf("optional:classpath:enact/"),
+    /** Use case definitions by name, from the definition files and from the application configuration. */
+    val useCases: Map<String, UseCaseDefinition> = emptyMap(),
     /** Groups of use cases sharing REST filters, by name. Group `default` applies to use cases without a group. */
     val groups: Map<String, GroupDefinition> = emptyMap(),
     /** Metrics and traces recorded for every use case, unless its group or the use case itself opts out. */
@@ -34,8 +41,6 @@ data class EnactProperties(
     )
 
     data class UseCaseDefinition(
-        /** Unique name of the use case, used as the Spring bean name. */
-        val name: String,
         /** Description of the use case. */
         val description: String?,
         /** Group the use case belongs to; `default` when not set. */

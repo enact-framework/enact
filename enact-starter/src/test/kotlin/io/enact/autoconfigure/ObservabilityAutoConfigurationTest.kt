@@ -22,8 +22,7 @@ class ObservabilityAutoConfigurationTest {
             .withBean(Greeter::class.java)
             .withBean(ObservationRegistry::class.java, { TestObservationRegistry.create() })
             .withPropertyValues(
-                "enact.use-cases[0].name=greet",
-                "enact.use-cases[0].steps[0].step=greet",
+                "enact.use-cases.greet.steps[0].step=greet",
             )
 
     @Test
@@ -51,7 +50,7 @@ class ObservabilityAutoConfigurationTest {
         runner
             .withPropertyValues(
                 "enact.groups.admin.observability.enabled=false",
-                "enact.use-cases[0].group=admin",
+                "enact.use-cases.greet.group=admin",
             ).run { context ->
                 assertThat(context.execute()).doesNotHaveAnyObservation()
             }
@@ -59,7 +58,7 @@ class ObservabilityAutoConfigurationTest {
 
     @Test
     fun `should record nothing when the use case itself is disabled`() {
-        runner.withPropertyValues("enact.use-cases[0].observability.enabled=false").run { context ->
+        runner.withPropertyValues("enact.use-cases.greet.observability.enabled=false").run { context ->
             assertThat(context.execute()).doesNotHaveAnyObservation()
         }
     }
@@ -69,8 +68,8 @@ class ObservabilityAutoConfigurationTest {
         runner
             .withPropertyValues(
                 "enact.groups.admin.observability.enabled=false",
-                "enact.use-cases[0].group=admin",
-                "enact.use-cases[0].observability.enabled=true",
+                "enact.use-cases.greet.group=admin",
+                "enact.use-cases.greet.observability.enabled=true",
             ).run { context ->
                 assertThat(context.execute()).hasObservationWithNameEqualTo("enact.use.case")
             }
@@ -82,7 +81,7 @@ class ObservabilityAutoConfigurationTest {
             .withPropertyValues(
                 "enact.observability.enabled=false",
                 "enact.groups.admin.observability.enabled=true",
-                "enact.use-cases[0].group=admin",
+                "enact.use-cases.greet.group=admin",
             ).run { context ->
                 assertThat(context.execute()).hasObservationWithNameEqualTo("enact.use.case")
             }
@@ -106,8 +105,7 @@ class ObservabilityAutoConfigurationTest {
                     }
                 },
             ).withPropertyValues(
-                "enact.use-cases[0].name=greet",
-                "enact.use-cases[0].steps[0].step=greet",
+                "enact.use-cases.greet.steps[0].step=greet",
             ).run { context ->
                 @Suppress("UNCHECKED_CAST")
                 (context.getBean("greet") as UseCase<String, String>).execute("Ann")

@@ -1,23 +1,27 @@
 # Use cases
 
-A use case is an ordered list of steps, defined under `enact.use-cases`:
+A use case is an ordered list of steps, written in a [definition file](definition-files.md) under
+`src/main/resources/enact/`:
 
-```yaml title="application.yaml"
-enact:
-  use-cases:
-    - name: createOrder # (1)!
-      description: Validates and stores a new order
-      trigger: { ... } # (2)!
-      steps:
-        - step: validateOrderCreation
-        - step: saveOrder
-          settings: { ... } # (3)!
-        - step: mapOrderResponse
+```yaml title="src/main/resources/enact/orders.yaml"
+use-cases:
+  createOrder: # (1)!
+    description: Validates and stores a new order
+    trigger: { ... } # (2)!
+    steps:
+      - step: validateOrderCreation
+      - step: saveOrder
+        settings: { ... } # (3)!
+      - step: mapOrderResponse
 ```
 
-1.  Bean name of the use case. Must be unique.
+1.  The key names the use case and the Spring bean Enact registers for it. It is used once across
+    every file and `application.yaml`.
 2.  Optional, at most one. See [HTTP trigger](http-trigger.md) or [Custom trigger](custom-trigger.md).
 3.  Optional, see [Retry and cache](step-settings.md).
+
+Every file of that folder is read, so each domain keeps its own. They can also be listed somewhere else, or
+written in `application.yaml` under `enact.use-cases`; see [Definition files](definition-files.md).
 
 The input of the use case is the input of its first step, and its output is the output of its last step.
 Each step receives the output of the previous one:

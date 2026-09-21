@@ -1,0 +1,3 @@
+groups:
+  admin:
+    filters: [requireAdmin]
