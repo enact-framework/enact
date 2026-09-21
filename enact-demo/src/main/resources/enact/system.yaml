@@ -9,7 +9,11 @@ use-cases:
     steps:
       - step: generateRandomUUID
 
+# Use cases in a group are wrapped by its filters (HandlerFilterFunction beans, see DemoFilters)
 groups:
+  default:                      # applies to every use case without a `group`
+    filters: [requestLog]
+
   public:                       # opts out of the default group
     filters: []
     observability:

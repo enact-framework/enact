@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.servlet.function.HandlerFilterFunction
 import org.springframework.web.servlet.function.ServerResponse
 
-/** Filters referenced by `enact.groups` and `trigger.rest.filters` in application.yaml. */
+/** Filters referenced by `groups` and `trigger.rest.filters` in the definition files. */
 @Configuration(proxyBeanMethods = false)
 class DemoFilters {
     private val log = LoggerFactory.getLogger(javaClass)

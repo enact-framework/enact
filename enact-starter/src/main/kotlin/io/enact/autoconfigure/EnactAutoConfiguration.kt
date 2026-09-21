@@ -1,6 +1,7 @@
 package io.enact.autoconfigure
 
 import io.enact.autoconfigure.configuration.DefinitionLoaderConfiguration
+import io.enact.autoconfigure.definition.Definitions
 import io.enact.autoconfigure.properties.EnactProperties
 import io.enact.core.configuration.EnableEnact
 import io.enact.core.trigger.TriggerHandler
@@ -11,7 +12,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
-import org.springframework.core.env.Environment
 
 @AutoConfiguration
 @EnableEnact
@@ -24,9 +24,8 @@ class EnactAutoConfiguration {
 
     @Bean
     fun triggerActivator(
-        properties: EnactProperties,
+        definitions: Definitions,
         registry: TriggerHandlerRegistry,
         applicationContext: ApplicationContext,
-        environment: Environment,
-    ): TriggerActivator = TriggerActivator(properties, registry, applicationContext, environment)
+    ): TriggerActivator = TriggerActivator(definitions, registry, applicationContext)
 }

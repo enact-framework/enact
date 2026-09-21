@@ -17,9 +17,5 @@ management:
       percentiles:
         enact.use.case: 0.95, 0.99   # p95 and p99 per use case, see docs/observability.md
 
-enact:
-  # Use cases are defined in `src/main/resources/enact/`, the default location of definition files.
-  # Use cases in a group are wrapped by its filters (HandlerFilterFunction beans, see DemoFilters)
-  groups:
-    default:                      # applies to every use case without a `group`
-      filters: [requestLog]
+# Use cases and groups are defined in `src/main/resources/enact/`, the default location of definition files.
+# Only Enact's own settings belong here; `enact.definitions` would point somewhere else.

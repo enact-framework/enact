@@ -12,6 +12,8 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.context.annotation.Bean
+import org.springframework.test.context.DynamicPropertyRegistry
+import org.springframework.test.context.DynamicPropertySource
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.get
 import org.springframework.web.servlet.function.HandlerFilterFunction
@@ -19,29 +21,7 @@ import org.springframework.web.servlet.function.ServerResponse
 import tools.jackson.databind.json.JsonMapper
 import java.util.UUID
 
-@SpringBootTest(
-    classes = [RestTriggerFiltersTest.App::class],
-    properties = [
-        "enact.groups.default.filters=requireUser",
-        "enact.groups.public.filters=",
-        "enact.groups.traced.filters=traceA,traceB",
-        "enact.use-cases.whoAmI.trigger.rest.method=GET",
-        "enact.use-cases.whoAmI.trigger.rest.path=/me",
-        "enact.use-cases.whoAmI.trigger.rest.bind.userId=attribute:userId",
-        "enact.use-cases.whoAmI.trigger.rest.bind.trail=attribute:trail",
-        "enact.use-cases.whoAmI.steps[0].step=whoAmI",
-        "enact.use-cases.health.group=public",
-        "enact.use-cases.health.trigger.rest.method=GET",
-        "enact.use-cases.health.trigger.rest.path=/health",
-        "enact.use-cases.health.steps[0].step=health",
-        "enact.use-cases.traced.group=traced",
-        "enact.use-cases.traced.trigger.rest.method=GET",
-        "enact.use-cases.traced.trigger.rest.path=/traced",
-        "enact.use-cases.traced.trigger.rest.filters=traceC",
-        "enact.use-cases.traced.trigger.rest.bind.trail=attribute:trail",
-        "enact.use-cases.traced.steps[0].step=traced",
-    ],
-)
+@SpringBootTest(classes = [RestTriggerFiltersTest.App::class])
 @AutoConfigureMockMvc
 class RestTriggerFiltersTest {
     @Autowired
@@ -82,8 +62,21 @@ class RestTriggerFiltersTest {
     @Test
     fun `should fail startup on unknown filter`() {
         runner
-            .withPropertyValues(*useCase("enact.use-cases.health.trigger.rest.filters=missing"))
-            .run { context ->
+            .withPropertyValues(
+                definitions(
+                    """
+                    use-cases:
+                      health:
+                        steps:
+                          - step: health
+                        trigger:
+                          rest:
+                            method: GET
+                            path: "/health"
+                            filters: [missing]
+                    """,
+                ),
+            ).run { context ->
                 assertThat(context).hasFailed()
                 assertThat(context.startupFailure).hasStackTraceContaining("filter 'missing'")
             }
@@ -93,8 +86,23 @@ class RestTriggerFiltersTest {
     fun `should fail startup on filter that is not a HandlerFilterFunction`() {
         runner
             .withBean("notAFilter", String::class.java, { "nope" })
-            .withPropertyValues(*useCase("enact.groups.default.filters=notAFilter"))
-            .run { context ->
+            .withPropertyValues(
+                definitions(
+                    """
+                    use-cases:
+                      health:
+                        steps:
+                          - step: health
+                        trigger:
+                          rest:
+                            method: GET
+                            path: "/health"
+                    groups:
+                      default:
+                        filters: [notAFilter]
+                    """,
+                ),
+            ).run { context ->
                 assertThat(context).hasFailed()
                 assertThat(context.startupFailure).hasStackTraceContaining("filter 'notAFilter'")
             }
@@ -105,14 +113,6 @@ class RestTriggerFiltersTest {
             .withConfiguration(AutoConfigurations.of(EnactAutoConfiguration::class.java, EnactRestTriggerAutoConfiguration::class.java))
             .withBean(JsonMapper::class.java, { JsonMapper.builder().build() })
             .withBean(Steps::class.java)
-
-    private fun useCase(vararg extra: String) =
-        arrayOf(
-            "enact.use-cases.health.trigger.rest.method=GET",
-            "enact.use-cases.health.trigger.rest.path=/health",
-            "enact.use-cases.health.steps[0].step=health",
-            *extra,
-        )
 
     data class Me(
         val userId: UUID,
@@ -166,7 +166,56 @@ class RestTriggerFiltersTest {
             }
     }
 
-    private companion object {
-        const val USER_ID = "7f1c1a52-6f7e-4a7e-9d59-2b1a3d7c0e11"
+    companion object {
+        private const val USER_ID = "7f1c1a52-6f7e-4a7e-9d59-2b1a3d7c0e11"
+
+        @JvmStatic
+        @DynamicPropertySource
+        fun enactDefinitions(registry: DynamicPropertyRegistry) {
+            val location =
+                definitionsFile(
+                    """
+                    use-cases:
+                      whoAmI:
+                        steps:
+                          - step: whoAmI
+                        trigger:
+                          rest:
+                            method: GET
+                            path: "/me"
+                            bind:
+                              userId: "attribute:userId"
+                              trail: "attribute:trail"
+                      health:
+                        group: public
+                        steps:
+                          - step: health
+                        trigger:
+                          rest:
+                            method: GET
+                            path: "/health"
+                      traced:
+                        group: traced
+                        steps:
+                          - step: traced
+                        trigger:
+                          rest:
+                            method: GET
+                            path: "/traced"
+                            filters: [traceC]
+                            bind:
+                              trail: "attribute:trail"
+                    groups:
+                      default:
+                        filters: [requireUser]
+                      public:
+                        filters: []
+                      traced:
+                        filters: [traceA, traceB]
+                    """,
+                )
+
+            registry.add("enact.definitions") { location }
+        }
     }
 }
